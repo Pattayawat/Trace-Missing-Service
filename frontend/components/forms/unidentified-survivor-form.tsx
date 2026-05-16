@@ -5,6 +5,8 @@ import { FormField } from "@/components/form-field"
 import { PhotoUpload } from "@/components/photo-upload"
 import { IncidentSelector } from "@/components/forms/incident-selector"
 import { Button } from "@/components/ui/button"
+import { createPerson } from "@/lib/api"
+import { useSWRConfig } from "swr"
 import { CheckCircle, Heart, Loader2, Info, User, MapPin, ClipboardList, ShieldCheck, AlertTriangle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -33,6 +35,7 @@ interface FormErrors {
 }
 
 export function UnidentifiedSurvivorForm() {
+  const { mutate } = useSWRConfig()
   const [formData, setFormData] = React.useState<FormData>({
     incidentId: "",
     sourceSystem: "",
@@ -87,9 +90,35 @@ export function UnidentifiedSurvivorForm() {
     if (!validate()) return
 
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+    
+    try {
+      await createPerson({
+        type: "survivor",
+        status: "safe",
+        name: formData.firstName ? `${formData.firstName} ${formData.lastName}` : null,
+        citizenId: formData.identityDocs || null,
+        age: null,
+        ageGroup: formData.ageGroup as any,
+        gender: formData.gender as any,
+        location: formData.locationFound,
+        lastSeenDate: formData.timeFound,
+        photoUrl: null,
+        description: `${formData.physicalDescription}\n\nตำหนิ: ${formData.tattoos}\n\nการแต่งกาย: ${formData.clothing}\n\nอาชีพ: ${formData.occupation}\n\nแพทย์: ${formData.medicalInfo}`,
+        incidentId: formData.incidentId,
+      })
+
+      // Refresh global data
+      mutate("all-persons")
+      mutate("metrics-all")
+      mutate((key: any) => typeof key === 'string' && key.startsWith('persons-'))
+      mutate((key: any) => typeof key === 'string' && key.startsWith('metrics-'))
+
+      setIsSubmitting(false)
+      setIsSubmitted(true)
+    } catch (e) {
+      console.error("Submission failed", e)
+      setIsSubmitting(false)
+    }
   }
 
   if (isSubmitted) {

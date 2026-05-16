@@ -97,11 +97,12 @@ interface IncidentCardProps {
 function IncidentCard({ incident, caseCount, onSelect }: IncidentCardProps) {
   const Icon = getIncidentTypeIcon(incident.incidentType)
   const startDate = new Date(incident.startDate)
+  const router = useRouter()
 
   return (
     <Card
       className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/30"
-      onClick={() => onSelect(incident.incidentId)}
+      onClick={() => router.push(`/incidents/${incident.incidentId}`)}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">

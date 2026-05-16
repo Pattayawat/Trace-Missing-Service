@@ -68,15 +68,16 @@ export const mockIncidents: Incident[] = [
 ]
 
 // ============================================
-// MOCK PERSONS (managed by this service)
+// IN-MEMORY STORE (for session persistence)
 // ============================================
-export const mockPersons: Person[] = [
+let personsStore: Person[] = [
   // ไฟป่าเชียงใหม่
   {
     id: "1",
     type: "missing-person",
     status: "missing",
     name: "สมชาย วงศ์ใหญ่",
+    citizenId: "1-1001-01234-56-1",
     caseId: "MP-2026-0001",
     age: 45,
     ageGroup: "adult",
@@ -93,6 +94,7 @@ export const mockPersons: Person[] = [
     type: "missing-person",
     status: "missing",
     name: "สุดา แก้วมณี",
+    citizenId: "3-5002-99887-77-2",
     caseId: "MP-2026-0002",
     age: 32,
     ageGroup: "adult",
@@ -109,6 +111,7 @@ export const mockPersons: Person[] = [
     type: "survivor",
     status: "safe",
     name: "หญิงไม่ทราบชื่อ",
+    citizenId: null,
     caseId: "SV-2026-0001",
     age: 25,
     ageGroup: "adult",
@@ -124,6 +127,7 @@ export const mockPersons: Person[] = [
     type: "unidentified-body",
     status: "unidentified",
     name: null,
+    citizenId: null,
     caseId: "UB-2026-0001",
     age: 50,
     ageGroup: "adult",
@@ -140,6 +144,7 @@ export const mockPersons: Person[] = [
     type: "missing-person",
     status: "missing",
     name: "อาหมัด มะหะหมัด",
+    citizenId: "1-9003-55667-88-9",
     caseId: "MP-2026-0003",
     age: 8,
     ageGroup: "child",
@@ -156,6 +161,7 @@ export const mockPersons: Person[] = [
     type: "missing-person",
     status: "found",
     name: "สุนีย์ หมัดหมาน",
+    citizenId: "3-9001-22334-44-5",
     caseId: "MP-2026-0004",
     age: 67,
     ageGroup: "elderly",
@@ -172,6 +178,7 @@ export const mockPersons: Person[] = [
     type: "survivor",
     status: "safe",
     name: "วิชัย แซ่ลิ้ม",
+    citizenId: "3-1004-88776-55-4",
     caseId: "SV-2026-0002",
     age: 42,
     ageGroup: "adult",
@@ -188,6 +195,7 @@ export const mockPersons: Person[] = [
     type: "unidentified-body",
     status: "unidentified",
     name: null,
+    citizenId: null,
     caseId: "UB-2026-0002",
     age: 35,
     ageGroup: "adult",
@@ -204,6 +212,7 @@ export const mockPersons: Person[] = [
     type: "missing-person",
     status: "missing",
     name: "ประยุทธ์ ทองดี",
+    citizenId: "3-8005-44332-11-0",
     caseId: "MP-2026-0005",
     age: 55,
     ageGroup: "adult",
@@ -220,6 +229,7 @@ export const mockPersons: Person[] = [
     type: "survivor",
     status: "safe",
     name: "มาลี สุวรรณ",
+    citizenId: "3-8001-99887-66-5",
     caseId: "SV-2026-0003",
     age: 60,
     ageGroup: "elderly",
@@ -231,169 +241,32 @@ export const mockPersons: Person[] = [
     contactPhone: "081-555-0007",
     incidentId: "INC-2026-003",
   },
-  // พายุเพชรบุรี (resolved)
-  {
-    id: "11",
-    type: "missing-person",
-    status: "found",
-    name: "สมศักดิ์ มงคล",
-    caseId: "MP-2025-0089",
-    age: 40,
-    ageGroup: "adult",
-    gender: "male",
-    location: "ชายหาดชะอำ",
-    lastSeenDate: "2025-12-21",
-    photoUrl: null,
-    description: "พบตัวปลอดภัยหลังพายุผ่านพ้น",
-    contactPhone: "081-555-0008",
-    incidentId: "INC-2025-089",
-  },
-  {
-    id: "12",
-    type: "survivor",
-    status: "safe",
-    name: "วันดี รุ่งโรจน์",
-    caseId: "SV-2025-0089",
-    age: 28,
-    ageGroup: "adult",
-    gender: "female",
-    location: "ศูนย์พักพิงเพชรบุรี",
-    lastSeenDate: "2025-12-22",
-    photoUrl: null,
-    description: "กลับบ้านแล้ว",
-    contactPhone: "081-555-0009",
-    incidentId: "INC-2025-089",
-  },
-]
-
-// ============================================
-// MOCK ACTIVITIES
-// ============================================
-export const mockActivities: ActivityItem[] = [
-  {
-    id: "act-1",
-    type: "new_report",
-    message: "รายงานคนหายรายใหม่จากเหตุไฟป่า",
-    location: "อ.แม่แตง, เชียงใหม่",
-    timestamp: new Date(Date.now() - 5 * 60 * 1000),
-    caseId: "MP-2026-0001",
-    incidentId: "INC-2026-001",
-  },
-  {
-    id: "act-2",
-    type: "status_update",
-    message: "พบตัว สุนีย์ หมัดหมาน ปลอดภัย",
-    location: "ศูนย์พักพิงหาดใหญ่",
-    timestamp: new Date(Date.now() - 15 * 60 * 1000),
-    caseId: "MP-2026-0004",
-    incidentId: "INC-2026-002",
-  },
-  {
-    id: "act-3",
-    type: "match_found",
-    message: "พบเคสที่อาจมีความเกี่ยวข้อง",
-    location: "โรงพยาบาลนครพิงค์",
-    timestamp: new Date(Date.now() - 30 * 60 * 1000),
-    caseId: "SV-2026-0001",
-    incidentId: "INC-2026-001",
-  },
-  {
-    id: "act-4",
-    type: "shelter_update",
-    message: "ศูนย์พักพิงหาดใหญ่เปิดรับผู้อพยพเพิ่ม",
-    location: "ศูนย์พักพิงหาดใหญ่",
-    timestamp: new Date(Date.now() - 45 * 60 * 1000),
-    incidentId: "INC-2026-002",
-  },
-  {
-    id: "act-5",
-    type: "new_report",
-    message: "รายงานผู้เสียชีวิตไม่ทราบตัวตน",
-    location: "คลองอู่ตะเภา",
-    timestamp: new Date(Date.now() - 60 * 60 * 1000),
-    caseId: "UB-2026-0002",
-    incidentId: "INC-2026-002",
-  },
-]
-
-// ============================================
-// MOCK LOCATION DATA
-// ============================================
-export const mockLocationData: LocationData[] = [
-  { name: "เชียงใหม่", missing: 2, found: 0, unidentified: 1, lat: 18.7883, lng: 98.9853 },
-  { name: "หาดใหญ่", missing: 1, found: 1, unidentified: 1, lat: 7.0087, lng: 100.4741 },
-  { name: "นครศรีธรรมราช", missing: 1, found: 0, unidentified: 0, lat: 8.4324, lng: 99.9631 },
-  { name: "เพชรบุรี", missing: 0, found: 1, unidentified: 0, lat: 13.1119, lng: 99.9399 },
-  { name: "เชียงราย", missing: 0, found: 0, unidentified: 0, lat: 19.9105, lng: 99.8406 },
-]
-
-// ============================================
-// MOCK EMERGENCY CONTACTS
-// ============================================
-export const emergencyContacts: EmergencyContact[] = [
-  {
-    id: "ec-1",
-    name: "สายด่วนแจ้งเหตุฉุกเฉินแห่งชาติ",
-    phone: "191",
-    description: "สำหรับเหตุฉุกเฉินที่คุกคามต่อชีวิตและความช่วยเหลือทันที",
-    available: "24/7",
-    priority: "critical",
-  },
-  {
-    id: "ec-2",
-    name: "ศูนย์บัญชาการบรรเทาสาธารณภัย",
-    phone: "1784",
-    description: "การประสานงานกลางสำหรับการปฏิบัติการบรรเทาสาธารณภัยทั้งหมด",
-    available: "24/7",
-    priority: "critical",
-  },
-  {
-    id: "ec-3",
-    name: "สายด่วนประสานงานครอบครัว",
-    phone: "1300",
-    description: "รายงานหรือสอบถามเกี่ยวกับสมาชิกในครอบครัวที่สูญหาย",
-    available: "06:00 - 23:00 น.",
-    priority: "high",
-  },
-  {
-    id: "ec-4",
-    name: "สายด่วนช่วยเหลือทางการแพทย์",
-    phone: "1669",
-    description: "สอบถามข้อมูลทางการแพทย์ที่ไม่ฉุกเฉินและข้อมูลโรงพยาบาล",
-    available: "24/7",
-    priority: "high",
-  },
-  {
-    id: "ec-5",
-    name: "สายด่วนสุขภาพจิต",
-    phone: "1323",
-    description: "การปรึกษาวิกฤตและบริการสนับสนุนทางอารมณ์",
-    available: "24/7",
-    priority: "normal",
-  },
-]
-
-// ============================================
-// MOCK POTENTIAL MATCHES
-// ============================================
-export const mockPotentialMatches: PotentialMatch[] = [
-  {
-    id: "match-1",
-    confidence: 78,
-    missingPerson: mockPersons[0],
-    foundPerson: mockPersons[2],
-    matchingFeatures: ["ช่วงอายุ", "เพศ", "พื้นที่เหตุการณ์เดียวกัน"],
-    createdAt: new Date(Date.now() - 30 * 60 * 1000),
-  },
 ]
 
 // ============================================
 // API FUNCTIONS
 // ============================================
 
+// Create person record
+export async function createPerson(data: Omit<Person, "id" | "caseId">): Promise<Person> {
+  await delay(800)
+  const id = Math.random().toString(36).substr(2, 9)
+  const prefix = data.type === "missing-person" ? "MP" : data.type === "survivor" ? "SV" : "UB"
+  const caseId = `${prefix}-2026-${Math.floor(1000 + Math.random() * 9000)}`
+  
+  const newPerson: Person = {
+    ...data,
+    id,
+    caseId,
+  }
+  
+  personsStore = [newPerson, ...personsStore]
+  return newPerson
+}
+
 // Fetch incidents from external service
 export async function fetchIncidents(): Promise<Incident[]> {
-  await delay(500) // Simulate network delay
+  await delay(500)
   return mockIncidents
 }
 
@@ -413,26 +286,17 @@ export async function fetchIncident(incidentId: string): Promise<Incident | null
 export async function fetchPersons(incidentId?: string): Promise<Person[]> {
   await delay(400)
   if (incidentId) {
-    return mockPersons.filter((p) => p.incidentId === incidentId)
+    return personsStore.filter((p) => p.incidentId === incidentId)
   }
-  return mockPersons
-}
-
-// Fetch activities (optionally filtered by incident)
-export async function fetchActivities(incidentId?: string): Promise<ActivityItem[]> {
-  await delay(300)
-  if (incidentId) {
-    return mockActivities.filter((a) => a.incidentId === incidentId)
-  }
-  return mockActivities
+  return personsStore
 }
 
 // Fetch dashboard metrics
 export async function fetchDashboardMetrics(incidentId?: string): Promise<DashboardMetrics> {
   await delay(300)
   const persons = incidentId
-    ? mockPersons.filter((p) => p.incidentId === incidentId)
-    : mockPersons
+    ? personsStore.filter((p) => p.incidentId === incidentId)
+    : personsStore
 
   return {
     totalMissing: persons.filter((p) => p.status === "missing").length,
@@ -447,7 +311,7 @@ export async function fetchDashboardMetrics(incidentId?: string): Promise<Dashbo
 export async function fetchIncidentCaseCounts(): Promise<Record<string, number>> {
   await delay(200)
   const counts: Record<string, number> = {}
-  mockPersons.forEach((p) => {
+  personsStore.forEach((p) => {
     counts[p.incidentId] = (counts[p.incidentId] || 0) + 1
   })
   return counts
@@ -481,3 +345,6 @@ export function getIncidentStatusLabel(status: string): string {
   }
   return labels[status] || status
 }
+
+// Re-export mock data that is used directly
+export { mockLocationData, mockActivities, mockPotentialMatches, emergencyContacts } from "./mock-data"

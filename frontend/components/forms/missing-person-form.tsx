@@ -5,6 +5,8 @@ import { FormField } from "@/components/form-field"
 import { PhotoUpload } from "@/components/photo-upload"
 import { IncidentSelector } from "@/components/forms/incident-selector"
 import { Button } from "@/components/ui/button"
+import { createPerson } from "@/lib/api"
+import { useSWRConfig } from "swr"
 import {
   CheckCircle,
   AlertCircle,
@@ -70,6 +72,7 @@ const STORAGE_KEY = "missing_person_report_draft"
 
 export function MissingPersonForm() {
   const [currentStep, setCurrentStep] = React.useState(1)
+  const { mutate } = useSWRConfig()
   const [formData, setFormData] = React.useState<FormData>({
     incidentId: "",
     missingFirstName: "",
@@ -174,11 +177,37 @@ export function MissingPersonForm() {
     if (!validateStep(2)) return
 
     setIsSubmitting(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-    localStorage.removeItem(STORAGE_KEY)
+    
+    try {
+      await createPerson({
+        type: "missing-person",
+        status: "missing",
+        name: `${formData.missingFirstName} ${formData.missingLastName}`,
+        citizenId: formData.missingIdCard || null,
+        age: parseInt(formData.missingAge) || null,
+        ageGroup: formData.missingAge ? (parseInt(formData.missingAge) < 13 ? "child" : parseInt(formData.missingAge) < 18 ? "teen" : parseInt(formData.missingAge) < 65 ? "adult" : "elderly") : null,
+        gender: formData.missingGender as any,
+        location: formData.locationLost,
+        lastSeenDate: formData.timeLost,
+        photoUrl: null,
+        description: `${formData.physicalDescription}\n\nตำหนิ: ${formData.tattoos}\n\nการแต่งกาย: ${formData.clothing}`,
+        contactPhone: formData.reporterPhone,
+        incidentId: formData.incidentId,
+      })
+      
+      // Refresh global data
+      mutate("all-persons")
+      mutate("metrics-all")
+      mutate((key: any) => typeof key === 'string' && key.startsWith('persons-'))
+      mutate((key: any) => typeof key === 'string' && key.startsWith('metrics-'))
+
+      setIsSubmitting(false)
+      setIsSubmitted(true)
+      localStorage.removeItem(STORAGE_KEY)
+    } catch (e) {
+      console.error("Submission failed", e)
+      setIsSubmitting(false)
+    }
   }
 
   const clearDraft = () => {

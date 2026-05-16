@@ -92,7 +92,12 @@ export function ExecutiveDashboard() {
     { revalidateOnFocus: false }
   )
 
-  const { data: metrics, isLoading: metricsLoading } = useSWR(
+  const {
+    data: metrics,
+    isLoading: metricsLoading,
+    error: metricsError,
+    mutate: refreshMetrics,
+  } = useSWR(
     shouldFilter ? `metrics-${selectedIncidentId}` : "metrics-all",
     () => fetchDashboardMetrics(shouldFilter ? selectedIncidentId! : undefined),
     { revalidateOnFocus: false }
@@ -100,7 +105,7 @@ export function ExecutiveDashboard() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    await Promise.all([refreshPersons(), refreshActivities()])
+    await Promise.all([refreshPersons(), refreshActivities(), refreshMetrics()])
     setLastUpdated(new Date())
     setIsRefreshing(false)
   }
@@ -280,7 +285,21 @@ export function ExecutiveDashboard() {
 
         {/* Metric Cards */}
         <section aria-label="Key metrics" className="mb-6">
-          {isLoading ? (
+          {metricsError ? (
+            <Card className="border-destructive/20 bg-destructive/5">
+              <CardContent className="flex items-center justify-between p-6">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-6 w-6 text-destructive" />
+                  <p className="text-sm font-medium text-destructive">
+                    ไม่สามารถโหลดข้อมูลสถิติได้
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => refreshMetrics()}>
+                  ลองใหม่
+                </Button>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
               {[...Array(5)].map((_, i) => (
                 <Card key={i}>

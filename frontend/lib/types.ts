@@ -22,6 +22,7 @@ export interface Person {
   type: PersonType
   status: PersonStatus
   name: string | null
+  citizenId: string | null // Thai National ID
   caseId: string
   age: number | null
   ageGroup: "child" | "teen" | "adult" | "elderly" | null

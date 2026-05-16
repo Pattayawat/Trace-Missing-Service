@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import useSWR from "swr"
-import { Plus, LayoutGrid, List, BarChart3, Heart, AlertTriangle } from "lucide-react"
+import { Plus, LayoutGrid, List, BarChart3, Heart, AlertTriangle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -39,7 +39,7 @@ export function AnnouncementBoard() {
   } = useIncident()
 
   // Fetch persons
-  const { data: allPersons = [], isLoading } = useSWR(
+  const { data: allPersons = [], isLoading, error, mutate } = useSWR(
     "all-persons",
     () => fetchPersons(),
     { revalidateOnFocus: false }
@@ -60,6 +60,7 @@ export function AnnouncementBoard() {
         const matchesSearch =
           person.name?.toLowerCase().includes(searchLower) ||
           person.caseId.toLowerCase().includes(searchLower) ||
+          person.citizenId?.toLowerCase().includes(searchLower) ||
           person.description.toLowerCase().includes(searchLower) ||
           person.location.toLowerCase().includes(searchLower)
         if (!matchesSearch) return false
@@ -326,7 +327,21 @@ export function AnnouncementBoard() {
           <h2 id="results-heading" className="sr-only">
             ผลการค้นหา
           </h2>
-          {isLoading ? (
+          {error ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 py-16 text-center">
+              <AlertTriangle className="mb-4 h-12 w-12 text-destructive" />
+              <h3 className="mb-1 text-lg font-semibold text-foreground">
+                เกิดข้อผิดพลาดในการโหลดข้อมูล
+              </h3>
+              <p className="mb-6 max-w-sm text-sm text-muted-foreground">
+                ไม่สามารถดึงข้อมูลรายชื่อได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง
+              </p>
+              <Button onClick={() => mutate()} variant="outline" className="gap-2">
+                <RefreshCw size={16} />
+                ลองใหม่
+              </Button>
+            </div>
+          ) : isLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {[...Array(8)].map((_, i) => (
                 <Skeleton key={i} className="h-64 rounded-lg" />
