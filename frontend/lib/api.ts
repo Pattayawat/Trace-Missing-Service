@@ -7,6 +7,12 @@ import type {
   PotentialMatch,
   DashboardMetrics,
 } from "./types"
+import { 
+  mockLocationData, 
+  mockActivities, 
+  mockPotentialMatches, 
+  emergencyContacts 
+} from "./mock-data"
 
 // Simulate network delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -291,6 +297,20 @@ export async function fetchPersons(incidentId?: string): Promise<Person[]> {
   return personsStore
 }
 
+// Fetch activities (optionally filtered by incident)
+export async function fetchActivities(incidentId?: string): Promise<ActivityItem[]> {
+  await delay(300)
+  if (incidentId) {
+    // Filter activities that have a caseId matching persons in that incident
+    const personCaseIds = personsStore
+      .filter((p) => p.incidentId === incidentId)
+      .map((p) => p.caseId)
+    
+    return mockActivities.filter((a: ActivityItem) => !a.caseId || personCaseIds.includes(a.caseId))
+  }
+  return mockActivities
+}
+
 // Fetch dashboard metrics
 export async function fetchDashboardMetrics(incidentId?: string): Promise<DashboardMetrics> {
   await delay(300)
@@ -347,4 +367,4 @@ export function getIncidentStatusLabel(status: string): string {
 }
 
 // Re-export mock data that is used directly
-export { mockLocationData, mockActivities, mockPotentialMatches, emergencyContacts } from "./mock-data"
+export { mockLocationData, mockActivities, mockPotentialMatches, emergencyContacts }

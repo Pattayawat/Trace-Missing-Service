@@ -1,14 +1,10 @@
-export type PersonStatus = "missing" | "found" | "unidentified" | "safe"
-export type PersonType = "missing-person" | "unidentified-body" | "survivor"
-
-export interface EmergencyContact {
-  id: string
-  name: string
-  phone: string
-  description: string
-  available: string
-  priority: "critical" | "high" | "normal"
-}
+import type { 
+  Person, 
+  ActivityItem, 
+  EmergencyContact, 
+  PotentialMatch, 
+  LocationData 
+} from "./types"
 
 export const emergencyContacts: EmergencyContact[] = [
   {
@@ -61,15 +57,6 @@ export const emergencyContacts: EmergencyContact[] = [
   },
 ]
 
-export interface PotentialMatch {
-  id: string
-  confidence: number
-  missingPerson: Person
-  foundPerson: Person
-  matchingFeatures: string[]
-  createdAt: Date
-}
-
 export const mockPotentialMatches: PotentialMatch[] = [
   {
     id: "match-1",
@@ -79,29 +66,33 @@ export const mockPotentialMatches: PotentialMatch[] = [
       type: "missing-person",
       status: "missing",
       name: "มาเรีย ซานโตส",
-      caseId: "MP-2024-0891",
+      citizenId: "1-2345-67890-12-3",
+      caseId: "MP-2026-0891",
       age: 34,
       ageGroup: "adult",
       gender: "female",
       location: "พื้นที่ศูนย์พักพิงกลางเมือง, บล็อก 5",
-      lastSeenDate: "2024-01-15",
+      lastSeenDate: "2026-01-15",
       photoUrl: null,
       description: "พบครั้งสุดท้ายสวมเสื้อแจ็คเก็ตสีน้ำเงิน, ผมสีเข้ม, สูงประมาณ 162 ซม.",
       contactPhone: "081-555-0123",
+      incidentId: "INC-2026-001",
     },
     foundPerson: {
       id: "sv-match-1",
       type: "survivor",
       status: "safe",
       name: "หญิงไม่ทราบชื่อ",
-      caseId: "SV-2024-0161",
+      citizenId: null,
+      caseId: "SV-2026-0161",
       age: 35,
       ageGroup: "adult",
       gender: "female",
       location: "โรงพยาบาลกลาง, วอร์ด 2A",
-      lastSeenDate: "2024-01-16",
+      lastSeenDate: "2026-01-16",
       photoUrl: null,
       description: "ผมสีเข้ม, สูงประมาณ 162 ซม., พบเสื้อผ้าสีน้ำเงินอยู่ใกล้ๆ",
+      incidentId: "INC-2026-001",
     },
     matchingFeatures: ["ช่วงอายุ", "เพศ", "สีผม", "ส่วนสูง", "ลักษณะเสื้อผ้า"],
     createdAt: new Date(Date.now() - 30 * 60 * 1000),
@@ -114,43 +105,38 @@ export const mockPotentialMatches: PotentialMatch[] = [
       type: "missing-person",
       status: "missing",
       name: "โทมัส วิลเลียมส์",
-      caseId: "MP-2024-0893",
+      citizenId: "3-4567-89012-34-5",
+      caseId: "MP-2026-0893",
       age: 78,
       ageGroup: "elderly",
       gender: "male",
       location: "หมู่บ้านซันเซ็ตไฮตส์",
-      lastSeenDate: "2024-01-15",
+      lastSeenDate: "2026-01-15",
       photoUrl: null,
       description: "ใช้ไม้เท้าพยุงเดิน, สวมแว่นตา, มีปัญหาทางการได้ยิน",
       contactPhone: "081-555-0127",
+      incidentId: "INC-2026-002",
     },
     foundPerson: {
       id: "sv-match-2",
       type: "survivor",
       status: "safe",
       name: "ชายสูงอายุไม่ทราบชื่อ",
-      caseId: "SV-2024-0162",
+      citizenId: null,
+      caseId: "SV-2026-0162",
       age: 75,
       ageGroup: "elderly",
       gender: "male",
       location: "โรงพยาบาลเมโมเรียล, ห้อง 315",
-      lastSeenDate: "2024-01-16",
+      lastSeenDate: "2026-01-16",
       photoUrl: null,
       description: "ชายสูงอายุสวมแว่นตา, ใช้อุปกรณ์ช่วยเดิน, มีปัญหาทางการสื่อสาร",
+      incidentId: "INC-2026-002",
     },
     matchingFeatures: ["ช่วงอายุ", "เพศ", "แว่นตา", "อุปกรณ์ช่วยเดิน", "ปัญหาทางการได้ยิน"],
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
   },
 ]
-
-export interface ActivityItem {
-  id: string
-  type: "new_report" | "status_update" | "match_found" | "shelter_update"
-  message: string
-  location: string
-  timestamp: Date
-  caseId?: string
-}
 
 export const mockActivities: ActivityItem[] = [
   {
@@ -159,7 +145,7 @@ export const mockActivities: ActivityItem[] = [
     message: "รายงานผู้รอดชีวิตรายใหม่ที่โรงพยาบาลกลาง",
     location: "โรงพยาบาลกลาง, วอร์ด 3B",
     timestamp: new Date(Date.now() - 2 * 60 * 1000),
-    caseId: "SV-2024-0160",
+    caseId: "SV-2026-0160",
   },
   {
     id: "act-2",
@@ -167,7 +153,7 @@ export const mockActivities: ActivityItem[] = [
     message: "อัปเดตสถานะของ มาเรีย ซานโตส",
     location: "พื้นที่ศูนย์พักพิงกลางเมือง",
     timestamp: new Date(Date.now() - 8 * 60 * 1000),
-    caseId: "MP-2024-0891",
+    caseId: "MP-2026-0891",
   },
   {
     id: "act-3",
@@ -175,7 +161,7 @@ export const mockActivities: ActivityItem[] = [
     message: "พบเคสที่อาจมีความเกี่ยวข้องกับบุคคลไม่ทราบตัวตน",
     location: "ริมแม่น้ำฝั่งตะวันตก",
     timestamp: new Date(Date.now() - 15 * 60 * 1000),
-    caseId: "UB-2024-0034",
+    caseId: "UB-2026-0034",
   },
   {
     id: "act-4",
@@ -190,7 +176,7 @@ export const mockActivities: ActivityItem[] = [
     message: "ยื่นรายงานคนหายรายใหม่",
     location: "เขตเหนือ",
     timestamp: new Date(Date.now() - 35 * 60 * 1000),
-    caseId: "MP-2024-0896",
+    caseId: "MP-2026-0896",
   },
   {
     id: "act-6",
@@ -198,7 +184,7 @@ export const mockActivities: ActivityItem[] = [
     message: "โรเบิร์ต เฉิน ได้กลับไปพบกับครอบครัวแล้ว",
     location: "ค่ายบรรเทาทุกข์ตะวันออก",
     timestamp: new Date(Date.now() - 45 * 60 * 1000),
-    caseId: "MP-2024-0889",
+    caseId: "MP-2026-0889",
   },
   {
     id: "act-7",
@@ -213,18 +199,9 @@ export const mockActivities: ActivityItem[] = [
     message: "พบบุคคลไม่ทราบตัวตนใกล้สะพาน",
     location: "พื้นที่สะพานใต้",
     timestamp: new Date(Date.now() - 75 * 60 * 1000),
-    caseId: "UB-2024-0036",
+    caseId: "UB-2026-0036",
   },
 ]
-
-export interface LocationData {
-  name: string
-  missing: number
-  found: number
-  unidentified: number
-  lat: number
-  lng: number
-}
 
 export const mockLocationData: LocationData[] = [
   { name: "ใจกลางเมือง", missing: 12, found: 8, unidentified: 2, lat: 40.7128, lng: -74.006 },
@@ -234,198 +211,206 @@ export const mockLocationData: LocationData[] = [
   { name: "สะพานใต้", missing: 10, found: 4, unidentified: 3, lat: 40.6892, lng: -74.0445 },
 ]
 
-export interface Person {
-  id: string
-  type: PersonType
-  status: PersonStatus
-  name: string | null
-  caseId: string
-  age: number | null
-  ageGroup: "child" | "teen" | "adult" | "elderly" | null
-  gender: "male" | "female" | "unknown"
-  location: string
-  lastSeenDate: string
-  photoUrl: string | null
-  description: string
-  contactPhone?: string
-}
-
 export const mockPersons: Person[] = [
   {
     id: "1",
     type: "missing-person",
     status: "missing",
     name: "มาเรีย ซานโตส",
-    caseId: "MP-2024-0891",
+    citizenId: "1-2345-67890-12-3",
+    caseId: "MP-2026-0891",
     age: 34,
     ageGroup: "adult",
     gender: "female",
     location: "พื้นที่ศูนย์พักพิงกลางเมือง, บล็อก 5",
-    lastSeenDate: "2024-01-15",
+    lastSeenDate: "2026-01-15",
     photoUrl: null,
     description: "พบครั้งสุดท้ายสวมเสื้อแจ็คเก็ตสีน้ำเงินและกางเกงยีนส์",
     contactPhone: "081-555-0123",
+    incidentId: "INC-2026-001",
   },
   {
     id: "2",
     type: "missing-person",
     status: "missing",
     name: "เจมส์ โรดริเกซ",
-    caseId: "MP-2024-0892",
+    citizenId: "1-3456-78901-23-4",
+    caseId: "MP-2026-0892",
     age: 8,
     ageGroup: "child",
     gender: "male",
     location: "เขตเหนือ, ใกล้โรงเรียนหมายเลข 12",
-    lastSeenDate: "2024-01-14",
+    lastSeenDate: "2026-01-14",
     photoUrl: null,
     description: "สะพายเป้สีแดงและสวมเสื้อเชิ้ตสีเขียว",
     contactPhone: "081-555-0124",
+    incidentId: "INC-2026-001",
   },
   {
     id: "3",
     type: "survivor",
     status: "safe",
     name: "เอเลน่า คิม",
-    caseId: "SV-2024-0156",
+    citizenId: "1-4567-89012-34-5",
+    caseId: "SV-2026-0156",
     age: 67,
     ageGroup: "elderly",
     gender: "female",
     location: "โรงพยาบาลกลาง, วอร์ด 3B",
-    lastSeenDate: "2024-01-16",
+    lastSeenDate: "2026-01-16",
     photoUrl: null,
     description: "อาการคงที่, บาดเจ็บเล็กน้อย",
     contactPhone: "081-555-0125",
+    incidentId: "INC-2026-001",
   },
   {
     id: "4",
     type: "unidentified-body",
     status: "unidentified",
     name: null,
-    caseId: "UB-2024-0034",
+    citizenId: null,
+    caseId: "UB-2026-0034",
     age: 45,
     ageGroup: "adult",
     gender: "male",
     location: "ริมแม่น้ำฝั่งตะวันตก, กริต C-7",
-    lastSeenDate: "2024-01-13",
+    lastSeenDate: "2026-01-13",
     photoUrl: null,
     description: "สูงประมาณ 178 ซม., ผมสีเข้ม, มีรอยสักที่แขนซ้าย",
+    incidentId: "INC-2026-002",
   },
   {
     id: "5",
     type: "missing-person",
     status: "found",
     name: "โรเบิร์ต เฉิน",
-    caseId: "MP-2024-0889",
+    citizenId: "1-5678-90123-45-6",
+    caseId: "MP-2026-0889",
     age: 52,
     ageGroup: "adult",
     gender: "male",
     location: "ค่ายบรรเทาทุกข์ตะวันออก",
-    lastSeenDate: "2024-01-12",
+    lastSeenDate: "2026-01-12",
     photoUrl: null,
     description: "พบตัวปลอดภัยที่ศูนย์พักพิงเมื่อวันที่ 16 ม.ค.",
     contactPhone: "081-555-0126",
+    incidentId: "INC-2026-002",
   },
   {
     id: "6",
     type: "survivor",
     status: "safe",
     name: "หญิงไม่ทราบชื่อ",
-    caseId: "SV-2024-0157",
+    citizenId: null,
+    caseId: "SV-2026-0157",
     age: 25,
     ageGroup: "adult",
     gender: "female",
     location: "ไอซียู โรงพยาบาลเมโมเรียล",
-    lastSeenDate: "2024-01-16",
+    lastSeenDate: "2026-01-16",
     photoUrl: null,
     description: "ไม่สามารถสื่อสารได้, กำลังระบุตัวตน",
+    incidentId: "INC-2026-002",
   },
   {
     id: "7",
     type: "missing-person",
     status: "missing",
     name: "โทมัส วิลเลียมส์",
-    caseId: "MP-2024-0893",
+    citizenId: "3-4567-89012-34-5",
+    caseId: "MP-2026-0893",
     age: 78,
     ageGroup: "elderly",
     gender: "male",
     location: "หมู่บ้านซันเซ็ตไฮตส์",
-    lastSeenDate: "2024-01-15",
+    lastSeenDate: "2026-01-15",
     photoUrl: null,
     description: "ใช้ไม้เท้าพยุงเดิน, สวมแว่นตา, มีปัญหาทางการได้ยิน",
     contactPhone: "081-555-0127",
+    incidentId: "INC-2026-003",
   },
   {
     id: "8",
     type: "unidentified-body",
     status: "unidentified",
     name: null,
-    caseId: "UB-2024-0035",
+    citizenId: null,
+    caseId: "UB-2026-0035",
     age: 30,
     ageGroup: "adult",
     gender: "female",
     location: "พื้นที่สะพานใต้",
-    lastSeenDate: "2024-01-14",
+    lastSeenDate: "2026-01-14",
     photoUrl: null,
     description: "สูงประมาณ 165 ซม., ผมสีบลอนด์, สวมชุดกระโปรงลายดอกไม้",
+    incidentId: "INC-2026-003",
   },
   {
     id: "9",
     type: "survivor",
     status: "safe",
     name: "เดวิด พาร์ค",
-    caseId: "SV-2024-0158",
+    citizenId: "1-6789-01234-56-7",
+    caseId: "SV-2026-0158",
     age: 42,
     ageGroup: "adult",
     gender: "male",
     location: "ศูนย์พักพิงชุมชน",
-    lastSeenDate: "2024-01-16",
+    lastSeenDate: "2026-01-16",
     photoUrl: null,
     description: "สภาพร่างกายดี, กำลังตามหาครอบครัว",
     contactPhone: "081-555-0128",
+    incidentId: "INC-2026-003",
   },
   {
     id: "10",
     type: "missing-person",
     status: "missing",
     name: "โซฟี แอนเดอร์สัน",
-    caseId: "MP-2024-0894",
+    citizenId: "1-7890-12345-67-8",
+    caseId: "MP-2026-0894",
     age: 16,
     ageGroup: "teen",
     gender: "female",
     location: "พื้นที่โรงเรียนมัธยมกลาง",
-    lastSeenDate: "2024-01-15",
+    lastSeenDate: "2026-01-15",
     photoUrl: null,
     description: "ชุดนักเรียน, เคสโทรศัพท์สีชมพู",
     contactPhone: "081-555-0129",
+    incidentId: "INC-2026-001",
   },
   {
     id: "11",
     type: "survivor",
     status: "safe",
     name: "ไมเคิล บราวน์",
-    caseId: "SV-2024-0159",
+    citizenId: "1-8901-23456-78-9",
+    caseId: "SV-2026-0159",
     age: 55,
     ageGroup: "adult",
     gender: "male",
     location: "โรงพยาบาลเซนต์แมรี่, ห้อง 412",
-    lastSeenDate: "2024-01-16",
+    lastSeenDate: "2026-01-16",
     photoUrl: null,
     description: "กำลังพักฟื้นจากอาการบาดเจ็บที่ขา",
     contactPhone: "081-555-0130",
+    incidentId: "INC-2026-002",
   },
   {
     id: "12",
     type: "missing-person",
     status: "missing",
     name: "ลิซ่า มาร์ติเนซ",
-    caseId: "MP-2024-0895",
+    citizenId: "1-9012-34567-89-0",
+    caseId: "MP-2026-0895",
     age: 29,
     ageGroup: "adult",
     gender: "female",
     location: "กรีนวูดอพาร์ตเมนต์",
-    lastSeenDate: "2024-01-14",
+    lastSeenDate: "2026-01-14",
     photoUrl: null,
     description: "ตั้งครรภ์ 7 เดือน, สวมชุดคลุมท้อง",
     contactPhone: "081-555-0131",
+    incidentId: "INC-2026-002",
   },
 ]
