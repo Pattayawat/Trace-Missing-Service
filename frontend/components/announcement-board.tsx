@@ -105,40 +105,39 @@ export function AnnouncementBoard() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                Disaster Relief Portal
+                ศูนย์ประสานงานช่วยเหลือผู้ประสบภัย
               </h1>
               <p className="text-sm text-muted-foreground">
-                Search and report missing persons, survivors, and unidentified
-                individuals
+                ค้นหาและรายงานคนหาย ผู้รอดชีวิต และบุคคลไม่ทราบตัวตน
               </p>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" asChild>
                 <Link href="/reunification" className="gap-2">
                   <Heart size={16} aria-hidden="true" />
-                  <span className="hidden sm:inline">Find Family</span>
+                  <span className="hidden sm:inline">ตามหาครอบครัว</span>
                 </Link>
               </Button>
               <Button variant="outline" size="sm" asChild>
                 <Link href="/dashboard" className="gap-2">
                   <BarChart3 size={16} aria-hidden="true" />
-                  <span className="hidden sm:inline">Dashboard</span>
+                  <span className="hidden sm:inline">แดชบอร์ด</span>
                 </Link>
               </Button>
               <Button variant="outline" size="sm" asChild>
-                <a href="tel:911" className="gap-2">
+                <a href="tel:191" className="gap-2">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-destructive" />
                   </span>
-                  Emergency 911
+                  ฉุกเฉิน 191
                 </a>
               </Button>
               <Button asChild className="gap-2">
                 <Link href="/report">
                   <Plus size={16} aria-hidden="true" />
-                  <span className="hidden sm:inline">Submit Report</span>
-                  <span className="sm:hidden">Report</span>
+                  <span className="hidden sm:inline">รายงาน</span>
+                  <span className="sm:hidden">รายงาน</span>
                 </Link>
               </Button>
             </div>
@@ -150,7 +149,7 @@ export function AnnouncementBoard() {
         {/* Stats Summary */}
         <section className="mb-6" aria-labelledby="stats-heading">
           <h2 id="stats-heading" className="sr-only">
-            Current Statistics
+            สถิติปัจจุบัน
           </h2>
           <StatsSummary
             totalMissing={stats.missing}
@@ -163,7 +162,7 @@ export function AnnouncementBoard() {
         {/* Search and Filters */}
         <section className="mb-6" aria-labelledby="search-heading">
           <h2 id="search-heading" className="sr-only">
-            Search and Filters
+            การค้นหาและตัวกรอง
           </h2>
           <SearchFilters
             filters={filters}
@@ -175,11 +174,11 @@ export function AnnouncementBoard() {
         {/* Results Header */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing{" "}
+            แสดง{" "}
             <span className="font-medium text-foreground">
               {filteredPersons.length}
             </span>{" "}
-            {filteredPersons.length === 1 ? "result" : "results"}
+            รายการ
           </p>
           <div className="flex items-center gap-1 rounded-lg border bg-card p-1">
             <Button
@@ -187,7 +186,7 @@ export function AnnouncementBoard() {
               size="sm"
               className="h-8 w-8 p-0"
               onClick={() => setViewMode("grid")}
-              aria-label="Grid view"
+              aria-label="มุมมองตาราง"
               aria-pressed={viewMode === "grid"}
             >
               <LayoutGrid size={16} />
@@ -197,7 +196,7 @@ export function AnnouncementBoard() {
               size="sm"
               className="h-8 w-8 p-0"
               onClick={() => setViewMode("list")}
-              aria-label="List view"
+              aria-label="มุมมองรายการ"
               aria-pressed={viewMode === "list"}
             >
               <List size={16} />
@@ -208,7 +207,7 @@ export function AnnouncementBoard() {
         {/* Results Grid */}
         <section aria-labelledby="results-heading">
           <h2 id="results-heading" className="sr-only">
-            Search Results
+            ผลการค้นหา
           </h2>
           {filteredPersons.length > 0 ? (
             <div
@@ -233,11 +232,10 @@ export function AnnouncementBoard() {
                 <LayoutGrid className="h-8 w-8 text-muted-foreground" />
               </div>
               <h3 className="mb-1 text-lg font-semibold text-foreground">
-                No results found
+                ไม่พบผลลัพธ์
               </h3>
               <p className="mb-4 max-w-sm text-sm text-muted-foreground">
-                Try adjusting your search or filter criteria to find what
-                you&apos;re looking for.
+                ลองปรับการค้นหาหรือตัวกรองเพื่อค้นหาสิ่งที่คุณต้องการ
               </p>
               <Button
                 variant="outline"
@@ -251,7 +249,7 @@ export function AnnouncementBoard() {
                   })
                 }
               >
-                Clear all filters
+                ล้างตัวกรองทั้งหมด
               </Button>
             </div>
           )}

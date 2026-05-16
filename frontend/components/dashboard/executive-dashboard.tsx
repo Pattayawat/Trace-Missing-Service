@@ -60,10 +60,10 @@ export function ExecutiveDashboard() {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-foreground">
-                  Emergency Response
+                  การตอบโต้เหตุฉุกเฉิน
                 </h1>
                 <p className="text-xs text-muted-foreground">
-                  Executive Dashboard
+                  แดชบอร์ดผู้บริหาร
                 </p>
               </div>
             </div>
@@ -72,7 +72,7 @@ export function ExecutiveDashboard() {
               <div className="hidden sm:flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/30 px-2.5 py-1.5">
                 <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">
-                  Updated {lastUpdated.toLocaleTimeString()}
+                  อัปเดตเมื่อ {lastUpdated.toLocaleTimeString()}
                 </span>
               </div>
               <Button
@@ -85,18 +85,18 @@ export function ExecutiveDashboard() {
                 <RefreshCw
                   className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`}
                 />
-                <span className="hidden sm:inline">Refresh</span>
+                <span className="hidden sm:inline">รีเฟรช</span>
               </Button>
               <Link href="/">
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <Search className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Search Board</span>
+                  <span className="hidden sm:inline">บอร์ดค้นหา</span>
                 </Button>
               </Link>
               <Link href="/report">
                 <Button size="sm" className="gap-1.5 bg-primary hover:bg-primary/90">
                   <FileText className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Report</span>
+                  <span className="hidden sm:inline">รายงาน</span>
                 </Button>
               </Link>
               <Button
@@ -105,9 +105,9 @@ export function ExecutiveDashboard() {
                 className="gap-1.5"
                 asChild
               >
-                <a href="tel:911">
+                <a href="tel:191">
                   <Phone className="h-3.5 w-3.5" />
-                  <span className="font-semibold">911</span>
+                  <span className="font-semibold">191</span>
                 </a>
               </Button>
             </div>
@@ -124,15 +124,15 @@ export function ExecutiveDashboard() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-foreground opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-foreground" />
               </span>
-              Active Emergency
+              เหตุฉุกเฉินที่กำลังดำเนินการ
             </Badge>
             <p className="text-sm font-medium text-foreground">
-              Regional disaster response in progress. All agencies on high alert.
+              การตอบโต้ภัยพิบัติในภูมิภาคกำลังดำเนินการ ทุกหน่วยงานเตรียมพร้อมสูงสุด
             </p>
             <div className="sm:ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Event ID: EM-2024-0089</span>
+              <span>รหัสเหตุการณ์: EM-2024-0089</span>
               <span className="hidden sm:inline">|</span>
-              <span className="hidden sm:inline">Day 4 of operations</span>
+              <span className="hidden sm:inline">วันที่ 4 ของการปฏิบัติงาน</span>
             </div>
           </div>
         </div>
@@ -141,39 +141,39 @@ export function ExecutiveDashboard() {
         <section aria-label="Key metrics" className="mb-6">
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
             <MetricCard
-              title="Total Missing"
+              title="คนหายทั้งหมด"
               value={totalMissing}
-              subtitle="Active cases"
+              subtitle="เคสที่กำลังดำเนินการ"
               icon={AlertTriangle}
               variant="danger"
-              trend={{ value: 12, direction: "down", label: "from yesterday" }}
+              trend={{ value: 12, direction: "down", label: "จากเมื่อวาน" }}
             />
             <MetricCard
-              title="Found Safe"
+              title="พบแล้ว (ปลอดภัย)"
               value={totalFound}
-              subtitle="Reunited"
+              subtitle="ได้พบครอบครัวแล้ว"
               icon={UserCheck}
               variant="success"
-              trend={{ value: 23, direction: "up", label: "from yesterday" }}
+              trend={{ value: 23, direction: "up", label: "จากเมื่อวาน" }}
             />
             <MetricCard
-              title="Safe Survivors"
+              title="ผู้รอดชีวิตที่ปลอดภัย"
               value={totalSafe}
-              subtitle="In shelters/hospitals"
+              subtitle="ในศูนย์พักพิง/โรงพยาบาล"
               icon={CheckCircle2}
               variant="primary"
             />
             <MetricCard
-              title="Unidentified"
+              title="ไม่ทราบตัวตน"
               value={totalUnidentified}
-              subtitle="Pending ID"
+              subtitle="รอการระบุตัวตน"
               icon={HelpCircle}
               variant="neutral"
             />
             <MetricCard
-              title="Cases Resolved"
+              title="ปิดเคสแล้ว"
               value={casesResolved}
-              subtitle="Total closed"
+              subtitle="รวมที่ปิดเคสแล้ว"
               icon={CheckCircle2}
               variant="success"
             />
@@ -204,8 +204,8 @@ export function ExecutiveDashboard() {
       <footer className="mt-8 border-t border-border/60 bg-muted/20">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-            <p>Emergency Response Coordination Center</p>
-            <p>Data refreshes automatically every 30 seconds</p>
+            <p>ศูนย์ประสานงานตอบโต้เหตุฉุกเฉิน</p>
+            <p>ข้อมูลอัปเดตอัตโนมัติทุก 30 วินาที</p>
           </div>
         </div>
       </footer>

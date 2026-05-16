@@ -17,19 +17,19 @@ interface PersonCardProps {
 function StatusBadge({ status }: { status: Person["status"] }) {
   const config = {
     missing: {
-      label: "Missing",
+      label: "คนหาย",
       className: "bg-destructive text-destructive-foreground",
     },
     found: {
-      label: "Found",
+      label: "พบแล้ว",
       className: "bg-primary text-primary-foreground",
     },
     safe: {
-      label: "Safe",
+      label: "ปลอดภัย",
       className: "bg-success text-success-foreground",
     },
     unidentified: {
-      label: "Unidentified",
+      label: "ไม่ทราบตัวตน",
       className: "bg-muted text-muted-foreground",
     },
   }
@@ -40,7 +40,7 @@ function StatusBadge({ status }: { status: Person["status"] }) {
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${className}`}
       role="status"
-      aria-label={`Status: ${label}`}
+      aria-label={`สถานะ: ${label}`}
     >
       {label}
     </span>
@@ -50,15 +50,15 @@ function StatusBadge({ status }: { status: Person["status"] }) {
 function TypeBadge({ type }: { type: Person["type"] }) {
   const config = {
     "missing-person": {
-      label: "Missing Person",
+      label: "คนหาย",
       className: "bg-destructive/10 text-destructive border-destructive/20",
     },
     "unidentified-body": {
-      label: "Unidentified",
+      label: "ไม่ทราบตัวตน",
       className: "bg-muted text-muted-foreground border-border",
     },
     survivor: {
-      label: "Survivor",
+      label: "ผู้รอดชีวิต",
       className: "bg-success/10 text-success border-success/20",
     },
   }
@@ -79,7 +79,7 @@ export function PersonCard({
   onViewDetails,
   onContact,
 }: PersonCardProps) {
-  const displayName = person.name || `Unidentified ${person.gender === "male" ? "Male" : person.gender === "female" ? "Female" : "Person"}`
+  const displayName = person.name || `${person.gender === "male" ? "ผู้ชาย" : person.gender === "female" ? "ผู้หญิง" : "บุคคล"}ไม่ทราบตัวตน`
 
   return (
     <Card className="group relative overflow-hidden transition-all hover:shadow-md hover:border-primary/30 py-0">
@@ -97,13 +97,13 @@ export function PersonCard({
           {person.photoUrl ? (
             <img
               src={person.photoUrl}
-              alt={`Photo of ${displayName}`}
+              alt={`รูปภาพของ ${displayName}`}
               className="h-full w-full object-cover"
             />
           ) : (
             <div
               className="flex h-full w-full items-center justify-center bg-secondary"
-              aria-label="No photo available"
+              aria-label="ไม่มีรูปภาพ"
             >
               <User
                 className="h-16 w-16 text-muted-foreground/50"
@@ -134,7 +134,7 @@ export function PersonCard({
               </h3>
               {person.age && (
                 <p className="text-sm text-muted-foreground">
-                  {person.age} years old, {person.gender}
+                  อายุ {person.age} ปี, {person.gender === "male" ? "ชาย" : person.gender === "female" ? "หญิง" : "ไม่ระบุเพศ"}
                 </p>
               )}
             </div>
@@ -153,7 +153,7 @@ export function PersonCard({
             <div className="flex items-center gap-2">
               <Calendar size={14} className="shrink-0" aria-hidden="true" />
               <span>
-                {new Date(person.lastSeenDate).toLocaleDateString("en-US", {
+                {new Date(person.lastSeenDate).toLocaleDateString("th-TH", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
@@ -175,7 +175,7 @@ export function PersonCard({
               onClick={() => onViewDetails(person)}
             >
               <Eye size={14} aria-hidden="true" />
-              View Details
+              ดูรายละเอียด
             </Button>
             {person.contactPhone && onContact && (
               <Button
@@ -183,10 +183,10 @@ export function PersonCard({
                 size="sm"
                 className="gap-1.5"
                 onClick={() => onContact(person)}
-                aria-label={`Contact relative of ${displayName}`}
+                aria-label={`ติดต่อญาติของ ${displayName}`}
               >
                 <Phone size={14} aria-hidden="true" />
-                <span className="sr-only sm:not-sr-only">Contact</span>
+                <span className="sr-only sm:not-sr-only">ติดต่อ</span>
               </Button>
             )}
           </div>

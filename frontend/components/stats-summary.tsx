@@ -17,7 +17,7 @@ export function StatsSummary({
 }: StatsSummaryProps) {
   const stats = [
     {
-      label: "Missing",
+      label: "คนหาย",
       value: totalMissing,
       icon: AlertTriangle,
       className: "border-destructive/30 bg-destructive/5",
@@ -25,7 +25,7 @@ export function StatsSummary({
       valueClass: "text-destructive",
     },
     {
-      label: "Found",
+      label: "พบแล้ว",
       value: totalFound,
       icon: Users,
       className: "border-primary/30 bg-primary/5",
@@ -33,7 +33,7 @@ export function StatsSummary({
       valueClass: "text-primary",
     },
     {
-      label: "Safe Survivors",
+      label: "ผู้รอดชีวิต",
       value: totalSafe,
       icon: Heart,
       className: "border-success/30 bg-success/5",
@@ -41,7 +41,7 @@ export function StatsSummary({
       valueClass: "text-success",
     },
     {
-      label: "Unidentified",
+      label: "ไม่ทราบตัวตน",
       value: totalUnidentified,
       icon: HelpCircle,
       className: "border-border bg-muted/50",
@@ -54,7 +54,7 @@ export function StatsSummary({
     <div
       className="grid grid-cols-2 gap-3 lg:grid-cols-4"
       role="region"
-      aria-label="Statistics summary"
+      aria-label="สรุปสถิติ"
     >
       {stats.map((stat) => (
         <div

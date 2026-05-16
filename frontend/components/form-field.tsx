@@ -16,7 +16,7 @@ import {
 interface FormFieldProps {
   id: string
   label: string
-  type?: "text" | "number" | "tel" | "email" | "textarea" | "select"
+  type?: "text" | "number" | "tel" | "email" | "textarea" | "select" | "datetime-local" | "date"
   placeholder?: string
   value: string
   onChange: (value: string) => void
@@ -24,6 +24,7 @@ interface FormFieldProps {
   required?: boolean
   options?: { value: string; label: string }[]
   helperText?: string
+  disabled?: boolean
 }
 
 export function FormField({
@@ -37,6 +38,7 @@ export function FormField({
   required,
   options,
   helperText,
+  disabled,
 }: FormFieldProps) {
   const inputId = `field-${id}`
   const errorId = `${inputId}-error`
@@ -49,6 +51,7 @@ export function FormField({
       "aria-invalid": !!error,
       "aria-describedby": error ? errorId : helperText ? helperId : undefined,
       required,
+      disabled,
     }
 
     if (type === "textarea") {

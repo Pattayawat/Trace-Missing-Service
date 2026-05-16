@@ -39,10 +39,10 @@ export function FallbackSection() {
       <div className="rounded-lg bg-warning/10 border border-warning/20 p-4">
         <h3 className="flex items-center gap-2 text-lg font-semibold text-warning-foreground">
           <Search className="h-5 w-5" aria-hidden="true" />
-          Can&apos;t Find Your Loved One?
+          ไม่พบคนที่คุณรักใช่หรือไม่?
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Don&apos;t worry - there are several ways we can help you locate your family member.
+          ไม่ต้องกังวล - มีหลายวิธีที่เราสามารถช่วยคุณค้นหาสมาชิกในครอบครัวของคุณได้
         </p>
       </div>
 
@@ -55,16 +55,16 @@ export function FallbackSection() {
             </div>
             <div className="flex-1">
               <h4 className="text-lg font-semibold text-foreground">
-                Report a New Missing Person
+                รายงานคนหายรายใหม่
               </h4>
               <p className="mt-1 text-sm text-muted-foreground">
-                If your loved one hasn&apos;t been reported yet, create a detailed report 
-                to add them to our system and enable automatic matching.
+                หากสมาชิกในครอบครัวของคุณยังไม่ได้รับการแจ้งหาย ให้สร้างรายงานโดยละเอียด 
+                เพื่อเพิ่มข้อมูลเข้าสู่ระบบและเปิดใช้งานการจับคู่โดยอัตโนมัติ
               </p>
               <Button asChild className="mt-4 gap-2" variant="destructive">
                 <Link href="/report">
                   <Plus className="h-4 w-4" aria-hidden="true" />
-                  Report Missing Person Now
+                  รายงานคนหายตอนนี้
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </Button>
@@ -78,10 +78,10 @@ export function FallbackSection() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Bell className="h-5 w-5 text-primary" aria-hidden="true" />
-            Subscribe to Match Alerts
+            สมัครรับการแจ้งเตือนการจับคู่
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Receive automatic SMS/Email notifications if a matching profile is added
+            รับการแจ้งเตือนทาง SMS/อีเมล โดยอัตโนมัติ หากมีการเพิ่มโปรไฟล์ที่ตรงกัน
           </p>
         </CardHeader>
         <CardContent>
@@ -91,14 +91,14 @@ export function FallbackSection() {
                 <CheckCircle2 className="h-6 w-6 text-success" />
               </div>
               <h4 className="font-semibold text-foreground">
-                Alert Subscription Active
+                การสมัครรับแจ้งเตือนทำงานแล้ว
               </h4>
               <p className="mt-1 text-sm text-muted-foreground">
-                You will receive notifications when potential matches are found.
-                Check your email for confirmation.
+                คุณจะได้รับการแจ้งเตือนเมื่อพบข้อมูลที่อาจตรงกัน 
+                โปรดตรวจสอบอีเมลของคุณเพื่อยืนยัน
               </p>
               <p className="mt-3 text-xs text-muted-foreground">
-                Subscription ID: SUB-{Date.now().toString(36).toUpperCase()}
+                รหัสการสมัคร: SUB-{Date.now().toString(36).toUpperCase()}
               </p>
             </div>
           ) : (
@@ -106,11 +106,11 @@ export function FallbackSection() {
               <div className="space-y-2">
                 <Label htmlFor="relative-name" className="flex items-center gap-2">
                   <User className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  Relative&apos;s Name
+                  ชื่อญาติ
                 </Label>
                 <Input
                   id="relative-name"
-                  placeholder="Full name of missing person"
+                  placeholder="ชื่อ-นามสกุล ของบุคคลที่สูญหาย"
                   required
                 />
               </div>
@@ -118,11 +118,11 @@ export function FallbackSection() {
               <div className="space-y-2">
                 <Label htmlFor="description" className="flex items-center gap-2">
                   <Shirt className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  Physical Description / Clothing / Age
+                  ลักษณะร่างกาย / เสื้อผ้า / อายุ
                 </Label>
                 <Textarea
                   id="description"
-                  placeholder="Describe physical features, last known clothing, approximate age, distinguishing marks..."
+                  placeholder="อธิบายลักษณะทางกายภาพ, เสื้อผ้าที่สวมใส่ล่าสุด, อายุโดยประมาณ, จุดสังเกต..."
                   rows={3}
                   required
                 />
@@ -132,19 +132,19 @@ export function FallbackSection() {
                 <div className="space-y-2">
                   <Label htmlFor="contact-phone" className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    Your Phone
+                    เบอร์โทรศัพท์ของคุณ
                   </Label>
                   <Input
                     id="contact-phone"
                     type="tel"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="0XX-XXX-XXXX"
                     required
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact-email" className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    Your Email
+                    อีเมลของคุณ
                   </Label>
                   <Input
                     id="contact-email"
@@ -159,12 +159,12 @@ export function FallbackSection() {
                 {isSubmitting ? (
                   <>
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Subscribing...
+                    กำลังสมัคร...
                   </>
                 ) : (
                   <>
                     <Bell className="h-4 w-4" aria-hidden="true" />
-                    Subscribe to Match Alerts
+                    สมัครรับการแจ้งเตือนการจับคู่
                   </>
                 )}
               </Button>
@@ -182,16 +182,16 @@ export function FallbackSection() {
             </div>
             <div className="flex-1">
               <h4 className="text-lg font-semibold text-foreground">
-                Browse All Public Postings
+                เรียกดูประกาศสาธารณะทั้งหมด
               </h4>
               <p className="mt-1 text-sm text-muted-foreground">
-                Manually search through all survivor and unidentified photos in case 
-                the automated system hasn&apos;t matched them yet.
+                ค้นหาด้วยตนเองผ่านภาพถ่ายผู้รอดชีวิตและบุคคลไม่ทราบตัวตนทั้งหมด 
+                ในกรณีที่ระบบอัตโนมัติยังไม่พบข้อมูลที่ตรงกัน
               </p>
               <Button asChild variant="outline" className="mt-4 gap-2">
                 <Link href="/">
                   <Search className="h-4 w-4" aria-hidden="true" />
-                  Open Search Board
+                  เปิดกระดานค้นหา
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </Button>

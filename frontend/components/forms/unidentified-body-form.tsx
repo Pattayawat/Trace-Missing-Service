@@ -4,17 +4,25 @@ import * as React from "react"
 import { FormField } from "@/components/form-field"
 import { PhotoUpload } from "@/components/photo-upload"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, AlertTriangle, Loader2 } from "lucide-react"
+import { CheckCircle, AlertTriangle, Loader2, User, MapPin, ClipboardList, ShieldCheck } from "lucide-react"
 
 interface FormData {
-  foundLocation: string
-  estimatedAge: string
-  estimatedGender: string
-  distinctFeatures: string
-  clothingDescription: string
+  sourceSystem: string
+  reportingAgency: string
+  firstName: string
+  lastName: string
+  ageGroup: string
+  gender: string
+  occupation: string
   photo: File | null
-  reporterName: string
-  reporterPhone: string
+  clothing: string
+  locationFound: string
+  timeFound: string
+  physicalDescription: string
+  tattoos: string
+  medicalInfo: string
+  identityDocs: string
+  status: string
 }
 
 interface FormErrors {
@@ -23,14 +31,22 @@ interface FormErrors {
 
 export function UnidentifiedBodyForm() {
   const [formData, setFormData] = React.useState<FormData>({
-    foundLocation: "",
-    estimatedAge: "",
-    estimatedGender: "",
-    distinctFeatures: "",
-    clothingDescription: "",
+    sourceSystem: "",
+    reportingAgency: "",
+    firstName: "",
+    lastName: "",
+    ageGroup: "",
+    gender: "",
+    occupation: "",
     photo: null,
-    reporterName: "",
-    reporterPhone: "",
+    clothing: "",
+    locationFound: "",
+    timeFound: "",
+    physicalDescription: "",
+    tattoos: "",
+    medicalInfo: "",
+    identityDocs: "",
+    status: "เสียชีวิต",
   })
   const [errors, setErrors] = React.useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -50,15 +66,12 @@ export function UnidentifiedBodyForm() {
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
 
-    if (!formData.foundLocation.trim()) {
-      newErrors.foundLocation = "Found location is required"
-    }
-    if (!formData.estimatedGender) {
-      newErrors.estimatedGender = "Please select estimated gender"
-    }
-    if (!formData.reporterPhone.trim()) {
-      newErrors.reporterPhone = "Contact phone is required"
-    }
+    if (!formData.sourceSystem.trim()) newErrors.sourceSystem = "กรุณาระบุระบบต้นทาง"
+    if (!formData.reportingAgency.trim()) newErrors.reportingAgency = "กรุณาระบุหน่วยงานที่แจ้ง"
+    if (!formData.ageGroup) newErrors.ageGroup = "กรุณาเลือกช่วงวัย"
+    if (!formData.gender) newErrors.gender = "กรุณาเลือกเพศ"
+    if (!formData.locationFound.trim()) newErrors.locationFound = "กรุณาระบุสถานที่ที่พบ"
+    if (!formData.timeFound) newErrors.timeFound = "กรุณาระบุวันเวลาที่พบ"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -80,169 +93,246 @@ export function UnidentifiedBodyForm() {
         <div className="rounded-full bg-success/10 p-4 mb-4">
           <CheckCircle className="h-12 w-12 text-success" />
         </div>
-        <h3 className="text-xl font-semibold text-foreground mb-2">
-          Report Submitted Successfully
+        <h3 className="text-xl font-bold text-foreground mb-2">
+          ส่งรายงานสำเร็จแล้ว
         </h3>
         <p className="text-muted-foreground max-w-md">
-          Your report has been received. Authorities have been notified and will investigate promptly.
+          ได้รับรายงานร่างผู้เสียชีวิตไม่ทราบตัวตนแล้ว ข้อมูลนี้จะถูกส่งต่อให้หน่วยงานที่เกี่ยวข้องเพื่อดำเนินการระบุตัวตนต่อไป
         </p>
         <Button
           onClick={() => {
             setIsSubmitted(false)
             setFormData({
-              foundLocation: "",
-              estimatedAge: "",
-              estimatedGender: "",
-              distinctFeatures: "",
-              clothingDescription: "",
+              sourceSystem: "",
+              reportingAgency: "",
+              firstName: "",
+              lastName: "",
+              ageGroup: "",
+              gender: "",
+              occupation: "",
               photo: null,
-              reporterName: "",
-              reporterPhone: "",
+              clothing: "",
+              locationFound: "",
+              timeFound: "",
+              physicalDescription: "",
+              tattoos: "",
+              medicalInfo: "",
+              identityDocs: "",
+              status: "เสียชีวิต",
             })
           }}
           className="mt-6"
           variant="outline"
         >
-          Submit Another Report
+          ส่งรายงานอื่นอีกครั้ง
         </Button>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 mb-6">
+    <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
         <div className="flex gap-3">
           <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-destructive">
-              Sensitive Report
+            <p className="text-sm font-semibold text-destructive">
+              รายงานร่างผู้เสียชีวิตไม่ทราบตัวตน
             </p>
             <p className="text-xs text-destructive/80 mt-1">
-              This information will be handled with care and shared only with authorized personnel. All fields marked with * are required.
+              ข้อมูลนี้เป็นข้อมูลละเอียดอ่อน จะถูกจัดการด้วยความระมัดระวังสูงสุดตามระเบียบของทางราชการ
             </p>
           </div>
         </div>
       </div>
 
-      <section aria-labelledby="location-heading">
-        <h3 id="location-heading" className="text-lg font-semibold text-foreground mb-4">
-          Discovery Location
-        </h3>
-        <FormField
-          id="foundLocation"
-          label="Found Location"
-          type="textarea"
-          placeholder="Describe the exact location where the body was found (address, landmarks, coordinates if known)"
-          value={formData.foundLocation}
-          onChange={updateField("foundLocation")}
-          error={errors.foundLocation}
-          required
-        />
-      </section>
-
-      <section aria-labelledby="identification-heading">
-        <h3 id="identification-heading" className="text-lg font-semibold text-foreground mb-4">
-          Identification Details
-        </h3>
+      {/* Section 1: Source Info */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 pb-1 border-b">
+          <ShieldCheck className="h-5 w-5 text-primary" />
+          <h3 className="font-bold text-foreground text-md">ข้อมูลการแจ้งเหตุ</h3>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField
-            id="estimatedAge"
-            label="Estimated Age Range"
-            type="select"
-            placeholder="Select range"
-            value={formData.estimatedAge}
-            onChange={updateField("estimatedAge")}
-            error={errors.estimatedAge}
-            options={[
-              { value: "infant", label: "Infant (0-2)" },
-              { value: "child", label: "Child (3-12)" },
-              { value: "teen", label: "Teen (13-19)" },
-              { value: "young-adult", label: "Young Adult (20-35)" },
-              { value: "middle-aged", label: "Middle Aged (36-55)" },
-              { value: "elderly", label: "Elderly (56+)" },
-            ]}
+            id="sourceSystem"
+            label="ระบบต้นทางที่ส่งข้อมูลเข้ามา"
+            placeholder="เช่น ระบบรวมศูนย์, นิติเวช, หรือหน่วยงานกู้ภัย"
+            value={formData.sourceSystem}
+            onChange={updateField("sourceSystem")}
+            error={errors.sourceSystem}
+            required
           />
           <FormField
-            id="estimatedGender"
-            label="Estimated Gender"
-            type="select"
-            placeholder="Select"
-            value={formData.estimatedGender}
-            onChange={updateField("estimatedGender")}
-            error={errors.estimatedGender}
+            id="reportingAgency"
+            label="หน่วยงานที่แจ้งข้อมูล"
+            placeholder="ชื่อหน่วยงาน หรือ โรงพยาบาล"
+            value={formData.reportingAgency}
+            onChange={updateField("reportingAgency")}
+            error={errors.reportingAgency}
             required
-            options={[
-              { value: "male", label: "Male" },
-              { value: "female", label: "Female" },
-              { value: "unknown", label: "Unknown/Undeterminable" },
-            ]}
           />
         </div>
       </section>
 
-      <section aria-labelledby="features-heading">
-        <h3 id="features-heading" className="text-lg font-semibold text-foreground mb-4">
-          Distinguishing Features
-        </h3>
+      {/* Section 2: Personal Info */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 pb-1 border-b">
+          <User className="h-5 w-5 text-primary" />
+          <h3 className="font-bold text-foreground text-md">ข้อมูลบุคคลนิรนาม</h3>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField
+            id="firstName"
+            label="ชื่อจริงบุคคลนิรนาม (ถ้าทราบ)"
+            placeholder="ไม่ระบุ"
+            value={formData.firstName}
+            onChange={updateField("firstName")}
+          />
+          <FormField
+            id="lastName"
+            label="นามสกุลบุคคลนิรนาม (ถ้าทราบ)"
+            placeholder="ไม่ระบุ"
+            value={formData.lastName}
+            onChange={updateField("lastName")}
+          />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <FormField
+            id="ageGroup"
+            label="ช่วงวัยโดยประมาณ"
+            type="select"
+            placeholder="เลือกช่วงวัย"
+            value={formData.ageGroup}
+            onChange={updateField("ageGroup")}
+            error={errors.ageGroup}
+            required
+            options={[
+              { value: "infant", label: "ทารก (0-2)" },
+              { value: "child", label: "เด็ก (3-12)" },
+              { value: "teen", label: "วัยรุ่น (13-19)" },
+              { value: "young-adult", label: "วัยผู้ใหญ่ตอนต้น (20-35)" },
+              { value: "middle-aged", label: "วัยกลางคน (36-55)" },
+              { value: "elderly", label: "ผู้สูงอายุ (56+)" },
+            ]}
+          />
+          <FormField
+            id="gender"
+            label="เพศสภาพโดยประมาณ"
+            type="select"
+            placeholder="เลือกเพศ"
+            value={formData.gender}
+            onChange={updateField("gender")}
+            error={errors.gender}
+            required
+            options={[
+              { value: "male", label: "ชาย" },
+              { value: "female", label: "หญิง" },
+              { value: "unknown", label: "ไม่สามารถระบุได้" },
+            ]}
+          />
+          <FormField
+            id="occupation"
+            label="อาชีพที่คาดคะเนได้"
+            placeholder="ระบุอาชีพที่คาดการณ์"
+            value={formData.occupation}
+            onChange={updateField("occupation")}
+          />
+          <FormField
+            id="status"
+            label="สถานะ"
+            value={formData.status}
+            onChange={() => {}}
+            required
+            disabled={true}
+            helperText="สถานะเริ่มต้นสำหรับร่างผู้เสียชีวิต"
+          />
+        </div>
+        <div className="grid gap-4">
+          <PhotoUpload
+            id="bodyPhoto"
+            label="รูปถ่ายบุคคลนิรนาม (สำหรับเจ้าหน้าที่)"
+            value={formData.photo}
+            onChange={updateField("photo") as (file: File | null) => void}
+          />
+        </div>
+      </section>
+
+      {/* Section 3: Location & Appearance */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 pb-1 border-b">
+          <MapPin className="h-5 w-5 text-primary" />
+          <h3 className="font-bold text-foreground text-md">สถานที่และลักษณะที่พบ</h3>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField
+            id="timeFound"
+            label="วันเวลาที่พบ"
+            type="datetime-local"
+            value={formData.timeFound}
+            onChange={updateField("timeFound")}
+            error={errors.timeFound}
+            required
+          />
+          <FormField
+            id="locationFound"
+            label="สถานที่ที่พบ"
+            type="textarea"
+            placeholder="ระบุสถานที่ที่พบร่างโดยละเอียด"
+            value={formData.locationFound}
+            onChange={updateField("locationFound")}
+            error={errors.locationFound}
+            required
+          />
+        </div>
         <div className="space-y-4">
           <FormField
-            id="distinctFeatures"
-            label="Distinct Features / Tattoos / Birthmarks"
+            id="physicalDescription"
+            label="รูปพรรณสัณฐาน"
             type="textarea"
-            placeholder="Describe any visible identifying features such as tattoos, scars, birthmarks, jewelry, or other distinguishing characteristics"
-            value={formData.distinctFeatures}
-            onChange={updateField("distinctFeatures")}
-            error={errors.distinctFeatures}
+            placeholder="ความสูง ผม ผิวกาย และลักษณะทางกายภาพอื่นๆ"
+            value={formData.physicalDescription}
+            onChange={updateField("physicalDescription")}
           />
           <FormField
-            id="clothingDescription"
-            label="Clothing Description"
+            id="tattoos"
+            label="รอยสัก / แผลเป็น / ตำหนิ"
             type="textarea"
-            placeholder="Describe the clothing worn, including colors, brands, condition"
-            value={formData.clothingDescription}
-            onChange={updateField("clothingDescription")}
-            error={errors.clothingDescription}
+            placeholder="ระบุรอยสักหรือตำหนิที่ชัดเจน"
+            value={formData.tattoos}
+            onChange={updateField("tattoos")}
+          />
+          <FormField
+            id="clothing"
+            label="การแต่งกาย / เครื่องประดับ / สิ่งของที่พบ"
+            type="textarea"
+            placeholder="อธิบายเสื้อผ้าและสิ่งของที่พบติดตัวร่าง"
+            value={formData.clothing}
+            onChange={updateField("clothing")}
           />
         </div>
       </section>
 
-      <section aria-labelledby="photo-body-heading">
-        <h3 id="photo-body-heading" className="text-lg font-semibold text-foreground mb-4">
-          Photo Documentation
-        </h3>
-        <PhotoUpload
-          id="bodyPhoto"
-          label="Upload photo (for authorized personnel only)"
-          value={formData.photo}
-          onChange={updateField("photo") as (file: File | null) => void}
-          error={errors.photo}
-        />
-      </section>
-
-      <section aria-labelledby="reporter-heading">
-        <h3 id="reporter-heading" className="text-lg font-semibold text-foreground mb-4">
-          Reporter Information
-        </h3>
-        <div className="grid gap-4 sm:grid-cols-2">
+      {/* Section 4: Documents & Medical */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 pb-1 border-b">
+          <ClipboardList className="h-5 w-5 text-primary" />
+          <h3 className="font-bold text-foreground text-md">ข้อมูลเพิ่มเติม</h3>
+        </div>
+        <div className="space-y-4">
           <FormField
-            id="reporterName"
-            label="Your Name"
-            placeholder="Enter your name"
-            value={formData.reporterName}
-            onChange={updateField("reporterName")}
-            error={errors.reporterName}
+            id="medicalInfo"
+            label="ข้อมูลทางการแพทย์"
+            type="textarea"
+            placeholder="ข้อมูลทางทันตกรรม การศัลยกรรม หรือข้อมูลทางการแพทย์อื่นๆ"
+            value={formData.medicalInfo}
+            onChange={updateField("medicalInfo")}
           />
           <FormField
-            id="reporterPhone"
-            label="Phone Number"
-            type="tel"
-            placeholder="Your contact phone"
-            value={formData.reporterPhone}
-            onChange={updateField("reporterPhone")}
-            error={errors.reporterPhone}
-            required
-            helperText="Authorities may need to contact you"
+            id="identityDocs"
+            label="เอกสารยืนยันบุคคล"
+            placeholder="ข้อมูลจากบัตรประชาชน หรือเอกสารสำคัญอื่นๆ ที่พบ"
+            value={formData.identityDocs}
+            onChange={updateField("identityDocs")}
           />
         </div>
       </section>
@@ -251,16 +341,16 @@ export function UnidentifiedBodyForm() {
         <Button
           type="submit"
           size="lg"
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6 text-lg"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-6 text-lg shadow-md transition-all active:scale-[0.98]"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Submitting Report...
+              กำลังส่งรายงาน...
             </>
           ) : (
-            "Submit Report"
+            "ส่งรายงานผู้เสียชีวิต"
           )}
         </Button>
       </div>

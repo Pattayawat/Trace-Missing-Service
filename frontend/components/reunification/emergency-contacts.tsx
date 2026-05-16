@@ -23,10 +23,10 @@ export function EmergencyContacts() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Phone className="h-5 w-5 text-destructive" aria-hidden="true" />
-            Emergency Hotline Directory
+            รายชื่อสายด่วนฉุกเฉิน
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Click any number to call directly
+            คลิกที่หมายเลขเพื่อโทรออกทันที
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -46,7 +46,7 @@ export function EmergencyContacts() {
                     </h4>
                     {contact.priority === "critical" && (
                       <span className="rounded bg-destructive/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-destructive">
-                        Critical
+                        วิกฤต
                       </span>
                     )}
                   </div>
@@ -67,7 +67,7 @@ export function EmergencyContacts() {
                   >
                     <a href={`tel:${contact.phone.replace(/[^0-9]/g, "")}`}>
                       <Phone className="h-4 w-4" aria-hidden="true" />
-                      Call {contact.phone}
+                      โทร {contact.phone}
                     </a>
                   </Button>
                 </div>
@@ -82,7 +82,7 @@ export function EmergencyContacts() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
             <MessageCircle className="h-5 w-5 text-primary" aria-hidden="true" />
-            Live Support Chat
+            แชทสนับสนุนสด
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -91,10 +91,10 @@ export function EmergencyContacts() {
               <MessageCircle className="h-6 w-6 text-primary" aria-hidden="true" />
             </div>
             <h4 className="font-semibold text-foreground">
-              Chat with a Response Agent
+              แชทกับเจ้าหน้าที่ตอบโต้
             </h4>
             <p className="mt-1 text-sm text-muted-foreground">
-              Get immediate assistance from trained disaster response personnel
+              รับความช่วยเหลือทันทีจากบุคลากรตอบโต้ภัยพิบัติที่ผ่านการฝึกอบรม
             </p>
             <div className="mt-3 flex items-center justify-center gap-2">
               <span className="relative flex h-2 w-2">
@@ -102,15 +102,15 @@ export function EmergencyContacts() {
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
               </span>
               <span className="text-xs text-success">
-                12 agents available now
+                เจ้าหน้าที่ 12 คนกำลังออนไลน์
               </span>
             </div>
             <Button className="mt-4 w-full gap-2">
               <MessageCircle className="h-4 w-4" aria-hidden="true" />
-              Start Live Chat
+              เริ่มแชทสด
             </Button>
             <p className="mt-2 text-xs text-muted-foreground">
-              Average response time: {"<"} 2 minutes
+              เวลาตอบกลับโดยเฉลี่ย: {"<"} 2 นาที
             </p>
           </div>
         </CardContent>

@@ -1,14 +1,18 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Prompt, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const prompt = Prompt({ 
+  subsets: ["thai", "latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: '--font-prompt',
+});
+const _geistMono = Geist_Mono({ subsets: ["latin"], variable: '--font-geist-mono' });
 
 export const metadata: Metadata = {
-  title: 'Disaster Relief Reporting Portal | Emergency Services',
-  description: 'Report missing persons, unidentified bodies, and survivors during disaster relief operations. Help reunite families and support emergency response efforts.',
+  title: 'ระบบรายงานบรรเทาสาธารณภัย | บริการฉุกเฉิน',
+  description: 'รายงานคนหาย พบร่างผู้เสียชีวิต และผู้รอดชีวิตระหว่างการปฏิบัติการบรรเทาสาธารณภัย ช่วยเหลือการกลับมาพบกันของครอบครัวและสนับสนุนความพยายามในการตอบโต้ภาวะฉุกเฉิน',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -35,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="bg-background">
+    <html lang="th" className={`${prompt.variable} bg-background`}>
       <body className="font-sans antialiased min-h-screen">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}

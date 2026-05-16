@@ -66,7 +66,7 @@ export function PhotoUpload({ id, label, value, onChange, error }: PhotoUploadPr
           <div className="relative aspect-video w-full">
             <img
               src={preview}
-              alt="Preview"
+              alt="ตัวอย่างรูปภาพ"
               className="h-full w-full rounded-lg object-cover"
             />
             <Button
@@ -75,7 +75,7 @@ export function PhotoUpload({ id, label, value, onChange, error }: PhotoUploadPr
               size="icon"
               className="absolute right-2 top-2 h-8 w-8"
               onClick={handleRemove}
-              aria-label="Remove photo"
+              aria-label="ลบรูปภาพ"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -90,15 +90,15 @@ export function PhotoUpload({ id, label, value, onChange, error }: PhotoUploadPr
             </div>
             <div className="text-center">
               <p className="text-sm font-medium text-foreground">
-                Click to upload a photo
+                คลิกเพื่ออัปโหลดรูปภาพ
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                JPG, PNG, or GIF up to 10MB
+                JPG, PNG หรือ GIF ขนาดไม่เกิน 10MB
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Upload className="h-3 w-3" />
-              <span>Drag and drop or click to browse</span>
+              <span>ลากและวางหรือคลิกเพื่อเลือกไฟล์</span>
             </div>
           </label>
         )}

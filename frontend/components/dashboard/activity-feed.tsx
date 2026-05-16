@@ -23,11 +23,11 @@ function formatTimeAgo(date: Date): string {
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / (1000 * 60))
 
-  if (diffMins < 1) return "Just now"
-  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffMins < 1) return "เมื่อสักครู่"
+  if (diffMins < 60) return `${diffMins} นาทีที่แล้ว`
   const diffHours = Math.floor(diffMins / 60)
-  if (diffHours < 24) return `${diffHours}h ago`
-  return `${Math.floor(diffHours / 24)}d ago`
+  if (diffHours < 24) return `${diffHours} ชม. ที่แล้ว`
+  return `${Math.floor(diffHours / 24)} วันที่แล้ว`
 }
 
 function getActivityIcon(type: ActivityItem["type"]) {
@@ -48,15 +48,15 @@ function getActivityIcon(type: ActivityItem["type"]) {
 function getActivityBadge(type: ActivityItem["type"]) {
   switch (type) {
     case "new_report":
-      return { label: "New Report", className: "bg-primary/15 text-primary border-primary/30" }
+      return { label: "รายงานใหม่", className: "bg-primary/15 text-primary border-primary/30" }
     case "status_update":
-      return { label: "Update", className: "bg-accent/15 text-accent-foreground border-accent/30" }
+      return { label: "อัปเดต", className: "bg-accent/15 text-accent-foreground border-accent/30" }
     case "match_found":
-      return { label: "Match", className: "bg-success/15 text-success border-success/30" }
+      return { label: "การจับคู่", className: "bg-success/15 text-success border-success/30" }
     case "shelter_update":
-      return { label: "Shelter", className: "bg-muted text-muted-foreground border-border" }
+      return { label: "ศูนย์พักพิง", className: "bg-muted text-muted-foreground border-border" }
     default:
-      return { label: "Activity", className: "bg-muted text-muted-foreground border-border" }
+      return { label: "กิจกรรม", className: "bg-muted text-muted-foreground border-border" }
   }
 }
 
@@ -67,20 +67,20 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <Activity className="h-4 w-4 text-primary" aria-hidden="true" />
-            Recent Activity
+            กิจกรรมล่าสุด
           </CardTitle>
           <div className="flex items-center gap-1.5">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
             </span>
-            <span className="text-xs font-medium text-success">Live</span>
+            <span className="text-xs font-medium text-success">สด</span>
           </div>
         </div>
-      </CardHeader>
+      </header>
       <CardContent className="pt-0">
         <ScrollArea className="h-[360px] pr-3">
-          <div className="space-y-3" role="feed" aria-label="Recent activities">
+          <div className="space-y-3" role="feed" aria-label="กิจกรรมล่าสุด">
             {activities.map((activity, index) => {
               const Icon = getActivityIcon(activity.type)
               const badge = getActivityBadge(activity.type)

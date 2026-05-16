@@ -62,13 +62,13 @@ export function SearchFilters({
             />
             <Input
               type="search"
-              placeholder="Search by name, case ID, or description..."
+              placeholder="ค้นหาตามชื่อ, หมายเลขเคส, หรือคำบรรยาย..."
               className="pl-10 h-12 text-base"
               value={filters.search}
               onChange={(e) =>
                 onFiltersChange({ ...filters, search: e.target.value })
               }
-              aria-label="Search persons"
+              aria-label="ค้นหาบุคคล"
             />
           </div>
           <Button
@@ -79,7 +79,7 @@ export function SearchFilters({
             aria-controls="advanced-filters"
           >
             <Filter size={18} aria-hidden="true" />
-            <span>Filters</span>
+            <span>ตัวกรอง</span>
             {hasActiveFilters && (
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                 {
@@ -107,7 +107,7 @@ export function SearchFilters({
           id="advanced-filters"
           className="border-t bg-muted/30 p-4"
           role="region"
-          aria-label="Advanced filters"
+          aria-label="ตัวกรองขั้นสูง"
         >
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-1.5 min-w-[140px] flex-1 sm:flex-none">
@@ -115,7 +115,7 @@ export function SearchFilters({
                 htmlFor="status-filter"
                 className="text-sm font-medium text-foreground"
               >
-                Status
+                สถานะ
               </label>
               <Select
                 value={filters.status}
@@ -124,14 +124,14 @@ export function SearchFilters({
                 }
               >
                 <SelectTrigger id="status-filter" className="h-10 bg-card">
-                  <SelectValue placeholder="All statuses" />
+                  <SelectValue placeholder="ทุกสถานะ" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="missing">Missing</SelectItem>
-                  <SelectItem value="found">Found</SelectItem>
-                  <SelectItem value="safe">Safe / Survivor</SelectItem>
-                  <SelectItem value="unidentified">Unidentified</SelectItem>
+                  <SelectItem value="all">ทุกสถานะ</SelectItem>
+                  <SelectItem value="missing">คนหาย</SelectItem>
+                  <SelectItem value="found">พบแล้ว</SelectItem>
+                  <SelectItem value="safe">ปลอดภัย / ผู้รอดชีวิต</SelectItem>
+                  <SelectItem value="unidentified">ไม่ทราบตัวตน</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -141,7 +141,7 @@ export function SearchFilters({
                 htmlFor="location-filter"
                 className="text-sm font-medium text-foreground"
               >
-                Location
+                สถานที่
               </label>
               <Select
                 value={filters.location}
@@ -150,10 +150,10 @@ export function SearchFilters({
                 }
               >
                 <SelectTrigger id="location-filter" className="h-10 bg-card">
-                  <SelectValue placeholder="All locations" />
+                  <SelectValue placeholder="ทุกสถานที่" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
+                  <SelectItem value="all">ทุกสถานที่</SelectItem>
                   {locations.map((loc) => (
                     <SelectItem key={loc} value={loc}>
                       {loc}
@@ -168,7 +168,7 @@ export function SearchFilters({
                 htmlFor="age-filter"
                 className="text-sm font-medium text-foreground"
               >
-                Age Group
+                ช่วงอายุ
               </label>
               <Select
                 value={filters.ageGroup}
@@ -177,14 +177,14 @@ export function SearchFilters({
                 }
               >
                 <SelectTrigger id="age-filter" className="h-10 bg-card">
-                  <SelectValue placeholder="All ages" />
+                  <SelectValue placeholder="ทุกช่วงอายุ" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Ages</SelectItem>
-                  <SelectItem value="child">Child (0-12)</SelectItem>
-                  <SelectItem value="teen">Teen (13-17)</SelectItem>
-                  <SelectItem value="adult">Adult (18-64)</SelectItem>
-                  <SelectItem value="elderly">Elderly (65+)</SelectItem>
+                  <SelectItem value="all">ทุกช่วงอายุ</SelectItem>
+                  <SelectItem value="child">เด็ก (0-12 ปี)</SelectItem>
+                  <SelectItem value="teen">วัยรุ่น (13-17 ปี)</SelectItem>
+                  <SelectItem value="adult">ผู้ใหญ่ (18-64 ปี)</SelectItem>
+                  <SelectItem value="elderly">ผู้สูงอายุ (65 ปีขึ้นไป)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -194,7 +194,7 @@ export function SearchFilters({
                 htmlFor="date-filter"
                 className="text-sm font-medium text-foreground"
               >
-                Date Reported
+                วันที่รายงาน
               </label>
               <Select
                 value={filters.dateRange}
@@ -203,13 +203,13 @@ export function SearchFilters({
                 }
               >
                 <SelectTrigger id="date-filter" className="h-10 bg-card">
-                  <SelectValue placeholder="Any date" />
+                  <SelectValue placeholder="ทุกวันที่" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Any Date</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">Past Week</SelectItem>
-                  <SelectItem value="month">Past Month</SelectItem>
+                  <SelectItem value="all">ทุกวันที่</SelectItem>
+                  <SelectItem value="today">วันนี้</SelectItem>
+                  <SelectItem value="week">สัปดาห์ที่ผ่านมา</SelectItem>
+                  <SelectItem value="month">เดือนที่ผ่านมา</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -222,7 +222,7 @@ export function SearchFilters({
                 className="h-10 gap-1.5 text-muted-foreground hover:text-foreground"
               >
                 <X size={16} aria-hidden="true" />
-                Clear filters
+                ล้างตัวกรอง
               </Button>
             )}
           </div>

@@ -14,22 +14,22 @@ export function StatusCharts({ locations }: StatusChartsProps) {
   // Status breakdown data
   const statusData = [
     {
-      name: "Missing",
+      name: "คนหาย",
       value: mockPersons.filter((p) => p.status === "missing").length,
       fill: "var(--color-destructive)",
     },
     {
-      name: "Found",
+      name: "พบแล้ว",
       value: mockPersons.filter((p) => p.status === "found").length,
       fill: "var(--color-primary)",
     },
     {
-      name: "Safe",
+      name: "ปลอดภัย",
       value: mockPersons.filter((p) => p.status === "safe").length,
       fill: "var(--color-success)",
     },
     {
-      name: "Unidentified",
+      name: "ไม่ทราบตัวตน",
       value: mockPersons.filter((p) => p.status === "unidentified").length,
       fill: "var(--color-muted-foreground)",
     },
@@ -44,15 +44,15 @@ export function StatusCharts({ locations }: StatusChartsProps) {
 
   const chartConfig = {
     missing: {
-      label: "Missing",
+      label: "คนหาย",
       color: "var(--color-destructive)",
     },
     found: {
-      label: "Found",
+      label: "พบแล้ว",
       color: "var(--color-success)",
     },
     safe: {
-      label: "Safe",
+      label: "ปลอดภัย",
       color: "var(--color-primary)",
     },
   }
@@ -66,7 +66,7 @@ export function StatusCharts({ locations }: StatusChartsProps) {
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <BarChart3 className="h-4 w-4 text-primary" aria-hidden="true" />
-            Cases by Area
+            เคสตามพื้นที่
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -87,24 +87,24 @@ export function StatusCharts({ locations }: StatusChartsProps) {
                 dataKey="missing"
                 fill="var(--color-destructive)"
                 radius={[4, 4, 0, 0]}
-                name="Missing"
+                name="คนหาย"
               />
               <Bar
                 dataKey="found"
                 fill="var(--color-success)"
                 radius={[4, 4, 0, 0]}
-                name="Found"
+                name="พบแล้ว"
               />
             </BarChart>
           </ChartContainer>
           <div className="mt-2 flex justify-center gap-4">
             <div className="flex items-center gap-1.5 text-xs">
               <span className="h-2.5 w-2.5 rounded-sm bg-destructive" />
-              <span className="text-muted-foreground">Missing</span>
+              <span className="text-muted-foreground">คนหาย</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs">
               <span className="h-2.5 w-2.5 rounded-sm bg-success" />
-              <span className="text-muted-foreground">Found</span>
+              <span className="text-muted-foreground">พบแล้ว</span>
             </div>
           </div>
         </CardContent>
@@ -115,7 +115,7 @@ export function StatusCharts({ locations }: StatusChartsProps) {
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <div className="h-4 w-4 rounded-full border-2 border-primary" aria-hidden="true" />
-            Status Breakdown
+            สรุปตามสถานะ
           </CardTitle>
         </CardHeader>
         <CardContent>

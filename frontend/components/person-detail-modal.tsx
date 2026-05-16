@@ -45,26 +45,26 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
 
   const displayName =
     person.name ||
-    `Unidentified ${person.gender === "male" ? "Male" : person.gender === "female" ? "Female" : "Person"}`
+    `${person.gender === "male" ? "ผู้ชาย" : person.gender === "female" ? "ผู้หญิง" : "บุคคล"}ไม่ทราบตัวตน`
 
   const statusConfig = {
     missing: {
-      label: "Missing",
+      label: "คนหาย",
       className: "bg-destructive text-destructive-foreground",
       icon: AlertTriangle,
     },
     found: {
-      label: "Found",
+      label: "พบแล้ว",
       className: "bg-primary text-primary-foreground",
       icon: null,
     },
     safe: {
-      label: "Safe",
+      label: "ปลอดภัย",
       className: "bg-success text-success-foreground",
       icon: null,
     },
     unidentified: {
-      label: "Unidentified",
+      label: "ไม่ทราบตัวตน",
       className: "bg-muted text-muted-foreground",
       icon: null,
     },
@@ -96,7 +96,7 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
         <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-card p-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Case #{person.caseId}
+              เคสหมายเลข #{person.caseId}
             </p>
             <h2 id="modal-title" className="text-xl font-semibold text-foreground">
               {displayName}
@@ -107,7 +107,7 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
             variant="ghost"
             size="icon"
             onClick={onClose}
-            aria-label="Close details"
+            aria-label="ปิดรายละเอียด"
           >
             <X size={20} />
           </Button>
@@ -122,7 +122,7 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
                 {person.photoUrl ? (
                   <img
                     src={person.photoUrl}
-                    alt={`Photo of ${displayName}`}
+                    alt={`รูปภาพของ ${displayName}`}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -146,18 +146,18 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Age
+                    อายุ
                   </p>
                   <p className="text-base text-foreground">
-                    {person.age ? `${person.age} years` : "Unknown"}
+                    {person.age ? `${person.age} ปี` : "ไม่ทราบ"}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Gender
+                    เพศ
                   </p>
                   <p className="text-base capitalize text-foreground">
-                    {person.gender}
+                    {person.gender === "male" ? "ชาย" : person.gender === "female" ? "หญิง" : "ไม่ระบุ"}
                   </p>
                 </div>
               </div>
@@ -166,8 +166,8 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   {person.type === "missing-person"
-                    ? "Last Seen Location"
-                    : "Current Location"}
+                    ? "สถานที่พบเห็นล่าสุด"
+                    : "สถานที่ปัจจุบัน"}
                 </p>
                 <div className="mt-1 flex items-start gap-2 text-foreground">
                   <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
@@ -179,13 +179,13 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   {person.type === "missing-person"
-                    ? "Last Seen Date"
-                    : "Reported Date"}
+                    ? "วันที่พบเห็นล่าสุด"
+                    : "วันที่รายงาน"}
                 </p>
                 <div className="mt-1 flex items-center gap-2 text-foreground">
                   <Calendar size={16} className="shrink-0 text-primary" />
                   <span>
-                    {new Date(person.lastSeenDate).toLocaleDateString("en-US", {
+                    {new Date(person.lastSeenDate).toLocaleDateString("th-TH", {
                       weekday: "long",
                       month: "long",
                       day: "numeric",
@@ -198,7 +198,7 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
               {/* Description */}
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Description
+                  รายละเอียด/ลักษณะเด่น
                 </p>
                 <p className="mt-1 text-foreground">{person.description}</p>
               </div>
@@ -207,7 +207,7 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
               {person.contactPhone && (
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
                   <p className="mb-2 text-xs font-medium uppercase tracking-wider text-primary">
-                    Contact Information
+                    ข้อมูลการติดต่อ
                   </p>
                   <a
                     href={`tel:${person.contactPhone}`}
@@ -228,12 +228,10 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
                 <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
                 <div>
                   <p className="font-medium text-destructive">
-                    This person is currently reported missing
+                    บุคคลนี้ได้รับการรายงานว่าหายตัวไป
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    If you have any information about this person&apos;s
-                    whereabouts, please contact the number above or local
-                    emergency services immediately.
+                    หากท่านมีเบาะแสเกี่ยวกับบุคคลนี้ โปรดติดต่อหมายเลขด้านบนหรือเจ้าหน้าที่ในพื้นที่ทันที
                   </p>
                 </div>
               </div>
@@ -245,17 +243,17 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
         <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 border-t bg-muted/30 p-4">
           <Button variant="outline" size="sm" className="gap-2">
             <Share2 size={14} />
-            Share
+            แชร์
           </Button>
           <Button variant="outline" size="sm" className="gap-2">
             <Printer size={14} />
-            Print
+            พิมพ์
           </Button>
           {person.contactPhone && (
             <Button asChild size="sm" className="gap-2">
               <a href={`tel:${person.contactPhone}`}>
                 <Phone size={14} />
-                Call Now
+                โทรเลย
               </a>
             </Button>
           )}

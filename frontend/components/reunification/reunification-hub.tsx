@@ -25,10 +25,10 @@ export function ReunificationHub() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground">
-                Family Reunification
+                การประสานงานครอบครัว
               </h1>
               <p className="text-xs text-muted-foreground">
-                Disaster Response Center
+                ศูนย์ตอบโต้ภัยพิบัติ
               </p>
             </div>
           </div>
@@ -37,22 +37,22 @@ export function ReunificationHub() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/" className="gap-2">
                 <Home className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Home</span>
+                <span className="hidden sm:inline">หน้าแรก</span>
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/dashboard" className="gap-2">
                 <BarChart3 className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Dashboard</span>
+                <span className="hidden sm:inline">แดชบอร์ด</span>
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <a href="tel:911" className="gap-2">
+              <a href="tel:191" className="gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-destructive" />
                 </span>
-                911
+                191
               </a>
             </Button>
           </nav>
@@ -66,12 +66,11 @@ export function ReunificationHub() {
             <Users className="h-8 w-8 text-primary" aria-hidden="true" />
           </div>
           <h2 className="mt-4 text-2xl font-bold text-foreground sm:text-3xl">
-            Connect with Your Loved Ones
+            ติดต่อและพบกับคนที่คุณรัก
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-muted-foreground">
-            Our AI-powered system continuously matches missing person reports with 
-            found survivors and unidentified individuals. Review potential matches 
-            below or contact our support team for assistance.
+            ระบบที่ขับเคลื่อนด้วย AI ของเราทำการจับคู่รายงานคนหายกับผู้รอดชีวิตและบุคคลไม่ทราบตัวตนอย่างต่อเนื่อง 
+            ตรวจสอบคู่ที่อาจตรงกันด้านล่าง หรือติดต่อทีมสนับสนุนของเราเพื่อขอความช่วยเหลือ
           </p>
         </div>
       </div>
@@ -83,7 +82,7 @@ export function ReunificationHub() {
           <aside className="w-full lg:w-[360px] lg:shrink-0">
             <div className="sticky top-24">
               <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Emergency Support
+                การสนับสนุนฉุกเฉิน
               </h3>
               <EmergencyContacts />
             </div>
@@ -98,14 +97,14 @@ export function ReunificationHub() {
                   id="matches-heading"
                   className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
                 >
-                  Potential Matches ({mockPotentialMatches.length})
+                  คู่ที่อาจตรงกัน ({mockPotentialMatches.length})
                 </h3>
                 <span className="flex items-center gap-2 text-xs text-success">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
                   </span>
-                  AI matching active
+                  ระบบจับคู่ AI กำลังทำงาน
                 </span>
               </div>
 
@@ -131,10 +130,10 @@ export function ReunificationHub() {
       <footer className="border-t bg-muted/30 py-6">
         <div className="mx-auto max-w-7xl px-4 text-center">
           <p className="text-sm text-muted-foreground">
-            Disaster Relief Family Reunification Portal
+            พอร์ทัลประสานงานครอบครัวเพื่อบรรเทาสาธารณภัย
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            For emergencies, always call 911 first
+            สำหรับเหตุฉุกเฉิน โปรดโทร 191 เป็นอันดับแรกเสมอ
           </p>
         </div>
       </footer>

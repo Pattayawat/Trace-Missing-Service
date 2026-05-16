@@ -21,16 +21,16 @@ export function IncidentMap({ locations }: IncidentMapProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <Layers className="h-4 w-4 text-primary" aria-hidden="true" />
-            Incident Clusters
+            กลุ่มเหตุการณ์
           </CardTitle>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="gap-1 text-[10px] bg-destructive/10 text-destructive border-destructive/30">
               <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
-              {totalMissing} Missing
+              คนหาย {totalMissing}
             </Badge>
             <Badge variant="outline" className="gap-1 text-[10px] bg-success/10 text-success border-success/30">
               <span className="h-1.5 w-1.5 rounded-full bg-success" />
-              {totalFound} Found
+              พบแล้ว {totalFound}
             </Badge>
           </div>
         </div>
@@ -40,7 +40,7 @@ export function IncidentMap({ locations }: IncidentMapProps) {
         <div
           className="relative h-[280px] rounded-xl border border-border/60 bg-muted/30 overflow-hidden"
           role="img"
-          aria-label="Map showing incident cluster locations"
+          aria-label="แผนที่แสดงตำแหน่งกลุ่มเหตุการณ์"
         >
           {/* Grid Background */}
           <div className="absolute inset-0 opacity-30">
@@ -106,21 +106,21 @@ export function IncidentMap({ locations }: IncidentMapProps) {
                       <div className="flex items-center justify-between text-xs">
                         <span className="flex items-center gap-1 text-destructive">
                           <AlertTriangle className="h-3 w-3" />
-                          Missing
+                          คนหาย
                         </span>
                         <span className="font-medium text-destructive">{location.missing}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
                         <span className="flex items-center gap-1 text-success">
                           <CheckCircle className="h-3 w-3" />
-                          Found
+                          พบแล้ว
                         </span>
                         <span className="font-medium text-success">{location.found}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
                         <span className="flex items-center gap-1 text-muted-foreground">
                           <HelpCircle className="h-3 w-3" />
-                          Unidentified
+                          ไม่ทราบตัวตน
                         </span>
                         <span className="font-medium">{location.unidentified}</span>
                       </div>
@@ -135,18 +135,18 @@ export function IncidentMap({ locations }: IncidentMapProps) {
           <div className="absolute bottom-3 left-3 flex items-center gap-3 rounded-lg border border-border/60 bg-card/95 px-3 py-2 shadow-sm backdrop-blur-sm">
             <div className="flex items-center gap-1.5 text-xs">
               <span className="h-3 w-3 rounded-full border-2 border-destructive/60 bg-destructive/20" />
-              <span className="text-muted-foreground">High Priority</span>
+              <span className="text-muted-foreground">ลำดับความสำคัญสูง</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs">
               <span className="h-3 w-3 rounded-full border-2 border-success/60 bg-success/20" />
-              <span className="text-muted-foreground">Recovering</span>
+              <span className="text-muted-foreground">กำลังฟื้นฟู</span>
             </div>
           </div>
 
           {/* Coordinates Display */}
           <div className="absolute top-3 right-3 rounded-lg border border-border/60 bg-card/95 px-2 py-1 shadow-sm backdrop-blur-sm">
             <p className="font-mono text-[10px] text-muted-foreground">
-              {totalMissing + totalFound + totalUnidentified} total incidents
+              เหตุการณ์ทั้งหมด {totalMissing + totalFound + totalUnidentified} รายการ
             </p>
           </div>
         </div>
@@ -163,8 +163,8 @@ export function IncidentMap({ locations }: IncidentMapProps) {
                 <span className="text-sm font-medium">{location.name}</span>
               </div>
               <div className="flex items-center gap-3 text-xs">
-                <span className="text-destructive font-medium">{location.missing} missing</span>
-                <span className="text-success font-medium">{location.found} found</span>
+                <span className="text-destructive font-medium">คนหาย {location.missing}</span>
+                <span className="text-success font-medium">พบแล้ว {location.found}</span>
               </div>
             </div>
           ))}
