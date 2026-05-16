@@ -1,0 +1,22 @@
+{
+  "name": "trace-missing-service",
+  "version": "1.0.0",
+  "description": "Trace Missing Service AWS Serverless Backend",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-eventbridge": "^3.400.0",
+    "@aws-sdk/client-sagemaker-runtime": "^3.400.0",
+    "@aws-sdk/client-sqs": "^3.400.0",
+    "@aws-sdk/client-s3": "^3.400.0",
+    "@aws-sdk/s3-request-presigner": "^3.400.0",
+    "aws-xray-sdk": "^3.5.0",
+    "ioredis": "^5.3.0",
+    "pg": "^8.11.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
