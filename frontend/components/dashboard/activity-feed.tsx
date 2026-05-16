@@ -12,7 +12,7 @@ import {
   Clock,
   Activity,
 } from "lucide-react"
-import { ActivityItem } from "@/lib/mock-data"
+import type { ActivityItem } from "@/lib/types"
 
 interface ActivityFeedProps {
   activities: ActivityItem[]
@@ -77,7 +77,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
             <span className="text-xs font-medium text-success">สด</span>
           </div>
         </div>
-      </header>
+      </CardHeader>
       <CardContent className="pt-0">
         <ScrollArea className="h-[360px] pr-3">
           <div className="space-y-3" role="feed" aria-label="กิจกรรมล่าสุด">

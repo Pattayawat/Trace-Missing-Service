@@ -1,12 +1,13 @@
 "use client"
 
-import { User, MapPin, Calendar, Phone, Eye } from "lucide-react"
+import { User, MapPin, Calendar, Phone, Eye, AlertTriangle } from "lucide-react"
 import {
   Card,
   CardContent,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import type { Person } from "@/lib/mock-data"
+import { useIncident } from "@/context/incident-context"
+import type { Person } from "@/lib/types"
 
 interface PersonCardProps {
   person: Person
@@ -79,6 +80,8 @@ export function PersonCard({
   onViewDetails,
   onContact,
 }: PersonCardProps) {
+  const { getIncidentById } = useIncident()
+  const incident = getIncidentById(person.incidentId)
   const displayName = person.name || `${person.gender === "male" ? "ผู้ชาย" : person.gender === "female" ? "ผู้หญิง" : "บุคคล"}ไม่ทราบตัวตน`
 
   return (
@@ -160,6 +163,12 @@ export function PersonCard({
                 })}
               </span>
             </div>
+            {incident && (
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={14} className="shrink-0 text-primary" aria-hidden="true" />
+                <span className="truncate text-xs">{incident.incidentName}</span>
+              </div>
+            )}
           </div>
 
           <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">

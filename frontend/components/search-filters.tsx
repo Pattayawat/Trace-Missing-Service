@@ -11,14 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useState } from "react"
-
-export interface FilterState {
-  search: string
-  status: string
-  location: string
-  ageGroup: string
-  dateRange: string
-}
+import { useIncident } from "@/context/incident-context"
+import { getIncidentTypeLabel, getProvinces } from "@/lib/api"
+import type { FilterState } from "@/lib/types"
 
 interface SearchFiltersProps {
   filters: FilterState
@@ -32,12 +27,27 @@ export function SearchFilters({
   locations,
 }: SearchFiltersProps) {
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const { incidents } = useIncident()
+  const provinces = getProvinces()
 
   const hasActiveFilters =
     filters.status !== "all" ||
     filters.location !== "all" ||
     filters.ageGroup !== "all" ||
-    filters.dateRange !== "all"
+    filters.dateRange !== "all" ||
+    filters.incidentId !== "all" ||
+    filters.incidentType !== "all" ||
+    filters.province !== "all"
+
+  const activeFilterCount = [
+    filters.status,
+    filters.location,
+    filters.ageGroup,
+    filters.dateRange,
+    filters.incidentId,
+    filters.incidentType,
+    filters.province,
+  ].filter((f) => f !== "all").length
 
   const clearFilters = () => {
     onFiltersChange({
@@ -46,6 +56,9 @@ export function SearchFilters({
       location: "all",
       ageGroup: "all",
       dateRange: "all",
+      incidentId: "all",
+      incidentType: "all",
+      province: "all",
     })
   }
 
@@ -62,7 +75,7 @@ export function SearchFilters({
             />
             <Input
               type="search"
-              placeholder="ค้นหาตามชื่อ, หมายเลขเคส, หรือคำบรรยาย..."
+              placeholder="ค้นหาตามชื่อ, หมายเลขเคส, เลขบัตรประชาชน หรือคำบรรยาย..."
               className="pl-10 h-12 text-base"
               value={filters.search}
               onChange={(e) =>
@@ -80,16 +93,9 @@ export function SearchFilters({
           >
             <Filter size={18} aria-hidden="true" />
             <span>ตัวกรอง</span>
-            {hasActiveFilters && (
+            {activeFilterCount > 0 && (
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                {
-                  [
-                    filters.status,
-                    filters.location,
-                    filters.ageGroup,
-                    filters.dateRange,
-                  ].filter((f) => f !== "all").length
-                }
+                {activeFilterCount}
               </span>
             )}
             <ChevronDown
@@ -109,8 +115,94 @@ export function SearchFilters({
           role="region"
           aria-label="ตัวกรองขั้นสูง"
         >
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex flex-col gap-1.5 min-w-[140px] flex-1 sm:flex-none">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Incident Filter */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="incident-filter"
+                className="text-sm font-medium text-foreground"
+              >
+                เหตุการณ์
+              </label>
+              <Select
+                value={filters.incidentId}
+                onValueChange={(value) =>
+                  onFiltersChange({ ...filters, incidentId: value })
+                }
+              >
+                <SelectTrigger id="incident-filter" className="h-10 bg-card">
+                  <SelectValue placeholder="ทุกเหตุการณ์" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทุกเหตุการณ์</SelectItem>
+                  {incidents.map((incident) => (
+                    <SelectItem key={incident.incidentId} value={incident.incidentId}>
+                      {incident.incidentName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Incident Type Filter */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="incident-type-filter"
+                className="text-sm font-medium text-foreground"
+              >
+                ประเภทเหตุการณ์
+              </label>
+              <Select
+                value={filters.incidentType}
+                onValueChange={(value) =>
+                  onFiltersChange({ ...filters, incidentType: value })
+                }
+              >
+                <SelectTrigger id="incident-type-filter" className="h-10 bg-card">
+                  <SelectValue placeholder="ทุกประเภท" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทุกประเภท</SelectItem>
+                  <SelectItem value="flood">{getIncidentTypeLabel("flood")}</SelectItem>
+                  <SelectItem value="fire">{getIncidentTypeLabel("fire")}</SelectItem>
+                  <SelectItem value="earthquake">{getIncidentTypeLabel("earthquake")}</SelectItem>
+                  <SelectItem value="storm">{getIncidentTypeLabel("storm")}</SelectItem>
+                  <SelectItem value="landslide">{getIncidentTypeLabel("landslide")}</SelectItem>
+                  <SelectItem value="other">{getIncidentTypeLabel("other")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Province Filter */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="province-filter"
+                className="text-sm font-medium text-foreground"
+              >
+                จังหวัด
+              </label>
+              <Select
+                value={filters.province}
+                onValueChange={(value) =>
+                  onFiltersChange({ ...filters, province: value })
+                }
+              >
+                <SelectTrigger id="province-filter" className="h-10 bg-card">
+                  <SelectValue placeholder="ทุกจังหวัด" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">ทุกจังหวัด</SelectItem>
+                  {provinces.map((province) => (
+                    <SelectItem key={province} value={province}>
+                      {province}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Status Filter */}
+            <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="status-filter"
                 className="text-sm font-medium text-foreground"
@@ -136,7 +228,8 @@ export function SearchFilters({
               </Select>
             </div>
 
-            <div className="flex flex-col gap-1.5 min-w-[140px] flex-1 sm:flex-none">
+            {/* Location Filter */}
+            <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="location-filter"
                 className="text-sm font-medium text-foreground"
@@ -163,7 +256,8 @@ export function SearchFilters({
               </Select>
             </div>
 
-            <div className="flex flex-col gap-1.5 min-w-[140px] flex-1 sm:flex-none">
+            {/* Age Group Filter */}
+            <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="age-filter"
                 className="text-sm font-medium text-foreground"
@@ -189,7 +283,8 @@ export function SearchFilters({
               </Select>
             </div>
 
-            <div className="flex flex-col gap-1.5 min-w-[140px] flex-1 sm:flex-none">
+            {/* Date Range Filter */}
+            <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="date-filter"
                 className="text-sm font-medium text-foreground"
@@ -214,17 +309,20 @@ export function SearchFilters({
               </Select>
             </div>
 
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                className="h-10 gap-1.5 text-muted-foreground hover:text-foreground"
-              >
-                <X size={16} aria-hidden="true" />
-                ล้างตัวกรอง
-              </Button>
-            )}
+            {/* Clear Filters Button */}
+            <div className="flex items-end">
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="h-10 gap-1.5 text-muted-foreground hover:text-foreground"
+                >
+                  <X size={16} aria-hidden="true" />
+                  ล้างตัวกรอง
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}

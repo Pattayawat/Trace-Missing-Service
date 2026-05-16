@@ -1,14 +1,20 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Plus, LayoutGrid, List, BarChart3, Heart } from "lucide-react"
+import useSWR from "swr"
+import { Plus, LayoutGrid, List, BarChart3, Heart, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { SearchFilters, type FilterState } from "@/components/search-filters"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { SearchFilters } from "@/components/search-filters"
 import { PersonCard } from "@/components/person-card"
 import { PersonDetailModal } from "@/components/person-detail-modal"
 import { StatsSummary } from "@/components/stats-summary"
-import { mockPersons, type Person } from "@/lib/mock-data"
+import { fetchPersons } from "@/lib/api"
+import { useIncident } from "@/context/incident-context"
 import Link from "next/link"
+import type { Person, FilterState } from "@/lib/types"
 
 export function AnnouncementBoard() {
   const [filters, setFilters] = useState<FilterState>({
@@ -17,19 +23,37 @@ export function AnnouncementBoard() {
     location: "all",
     ageGroup: "all",
     dateRange: "all",
+    incidentId: "all",
+    incidentType: "all",
+    province: "all",
   })
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [activeTab, setActiveTab] = useState<string>("all")
+
+  const {
+    selectedIncidentId,
+    selectedIncident,
+    incidents,
+    setSelectedIncidentId,
+  } = useIncident()
+
+  // Fetch persons
+  const { data: allPersons = [], isLoading } = useSWR(
+    "all-persons",
+    () => fetchPersons(),
+    { revalidateOnFocus: false }
+  )
 
   // Extract unique locations for filter
   const locations = useMemo(() => {
-    const locs = new Set(mockPersons.map((p) => p.location.split(",")[0].trim()))
+    const locs = new Set(allPersons.map((p) => p.location.split(",")[0].trim()))
     return Array.from(locs).sort()
-  }, [])
+  }, [allPersons])
 
-  // Filter persons based on current filters
+  // Filter persons based on current filters and selected incident
   const filteredPersons = useMemo(() => {
-    return mockPersons.filter((person) => {
+    return allPersons.filter((person) => {
       // Search filter
       if (filters.search) {
         const searchLower = filters.search.toLowerCase()
@@ -39,6 +63,31 @@ export function AnnouncementBoard() {
           person.description.toLowerCase().includes(searchLower) ||
           person.location.toLowerCase().includes(searchLower)
         if (!matchesSearch) return false
+      }
+
+      // Incident filter (from dropdown or sidebar selection)
+      const effectiveIncidentId = filters.incidentId !== "all" 
+        ? filters.incidentId 
+        : selectedIncidentId
+      
+      if (effectiveIncidentId && person.incidentId !== effectiveIncidentId) {
+        return false
+      }
+
+      // Incident type filter
+      if (filters.incidentType !== "all") {
+        const personIncident = incidents.find((i) => i.incidentId === person.incidentId)
+        if (!personIncident || personIncident.incidentType !== filters.incidentType) {
+          return false
+        }
+      }
+
+      // Province filter
+      if (filters.province !== "all") {
+        const personIncident = incidents.find((i) => i.incidentId === person.incidentId)
+        if (!personIncident || personIncident.province !== filters.province) {
+          return false
+        }
       }
 
       // Status filter
@@ -59,7 +108,7 @@ export function AnnouncementBoard() {
         return false
       }
 
-      // Date range filter (simplified for demo)
+      // Date range filter
       if (filters.dateRange !== "all") {
         const personDate = new Date(person.lastSeenDate)
         const now = new Date()
@@ -72,20 +121,37 @@ export function AnnouncementBoard() {
         if (filters.dateRange === "month" && diffDays > 30) return false
       }
 
+      // Tab filter
+      if (activeTab !== "all") {
+        if (activeTab === "missing-person" && person.type !== "missing-person") return false
+        if (activeTab === "survivor" && person.type !== "survivor") return false
+        if (activeTab === "unidentified-body" && person.type !== "unidentified-body") return false
+      }
+
       return true
     })
-  }, [filters])
+  }, [filters, allPersons, selectedIncidentId, incidents, activeTab])
 
   // Calculate stats
   const stats = useMemo(() => {
+    // Use the filtered base (considering incident selection but not tab)
+    const basePersons = allPersons.filter((person) => {
+      const effectiveIncidentId = filters.incidentId !== "all" 
+        ? filters.incidentId 
+        : selectedIncidentId
+      if (effectiveIncidentId && person.incidentId !== effectiveIncidentId) {
+        return false
+      }
+      return true
+    })
+
     return {
-      missing: mockPersons.filter((p) => p.status === "missing").length,
-      found: mockPersons.filter((p) => p.status === "found").length,
-      safe: mockPersons.filter((p) => p.status === "safe").length,
-      unidentified: mockPersons.filter((p) => p.status === "unidentified")
-        .length,
+      missing: basePersons.filter((p) => p.status === "missing").length,
+      found: basePersons.filter((p) => p.status === "found").length,
+      safe: basePersons.filter((p) => p.status === "safe").length,
+      unidentified: basePersons.filter((p) => p.status === "unidentified").length,
     }
-  }, [])
+  }, [allPersons, filters.incidentId, selectedIncidentId])
 
   const handleViewDetails = (person: Person) => {
     setSelectedPerson(person)
@@ -100,7 +166,7 @@ export function AnnouncementBoard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+      <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 lg:top-0">
         <div className="mx-auto max-w-7xl px-4 py-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -124,7 +190,7 @@ export function AnnouncementBoard() {
                   <span className="hidden sm:inline">แดชบอร์ด</span>
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="sm" asChild className="hidden lg:flex">
                 <a href="tel:191" className="gap-2">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75" />
@@ -146,17 +212,50 @@ export function AnnouncementBoard() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6">
+        {/* Current Incident Banner */}
+        {selectedIncident && (
+          <div className="mb-6 rounded-xl border border-primary/40 bg-primary/5 p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <Badge className="w-fit gap-1.5 bg-primary text-primary-foreground border-0">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                กำลังดูเหตุการณ์
+              </Badge>
+              <p className="text-sm font-medium text-foreground">
+                {selectedIncident.incidentName}
+              </p>
+              <div className="sm:ml-auto">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedIncidentId(null)}
+                  className="text-muted-foreground h-7"
+                >
+                  ดูทุกเหตุการณ์
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats Summary */}
         <section className="mb-6" aria-labelledby="stats-heading">
           <h2 id="stats-heading" className="sr-only">
             สถิติปัจจุบัน
           </h2>
-          <StatsSummary
-            totalMissing={stats.missing}
-            totalFound={stats.found}
-            totalSafe={stats.safe}
-            totalUnidentified={stats.unidentified}
-          />
+          {isLoading ? (
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-24 rounded-lg" />
+              ))}
+            </div>
+          ) : (
+            <StatsSummary
+              totalMissing={stats.missing}
+              totalFound={stats.found}
+              totalSafe={stats.safe}
+              totalUnidentified={stats.unidentified}
+            />
+          )}
         </section>
 
         {/* Search and Filters */}
@@ -170,6 +269,24 @@ export function AnnouncementBoard() {
             locations={locations}
           />
         </section>
+
+        {/* Tabs for Person Types */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+            <TabsTrigger value="all" className="text-sm py-2">
+              ทั้งหมด
+            </TabsTrigger>
+            <TabsTrigger value="missing-person" className="text-sm py-2">
+              ผู้สูญหาย
+            </TabsTrigger>
+            <TabsTrigger value="survivor" className="text-sm py-2">
+              ผู้ประสบภัยไม่ทราบตัวตน
+            </TabsTrigger>
+            <TabsTrigger value="unidentified-body" className="text-sm py-2">
+              ผู้เสียชีวิตไม่ทราบตัวตน
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {/* Results Header */}
         <div className="mb-4 flex items-center justify-between">
@@ -209,7 +326,13 @@ export function AnnouncementBoard() {
           <h2 id="results-heading" className="sr-only">
             ผลการค้นหา
           </h2>
-          {filteredPersons.length > 0 ? (
+          {isLoading ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {[...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="h-64 rounded-lg" />
+              ))}
+            </div>
+          ) : filteredPersons.length > 0 ? (
             <div
               className={
                 viewMode === "grid"
@@ -239,15 +362,19 @@ export function AnnouncementBoard() {
               </p>
               <Button
                 variant="outline"
-                onClick={() =>
+                onClick={() => {
                   setFilters({
                     search: "",
                     status: "all",
                     location: "all",
                     ageGroup: "all",
                     dateRange: "all",
+                    incidentId: "all",
+                    incidentType: "all",
+                    province: "all",
                   })
-                }
+                  setActiveTab("all")
+                }}
               >
                 ล้างตัวกรองทั้งหมด
               </Button>

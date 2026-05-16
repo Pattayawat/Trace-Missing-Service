@@ -3,10 +3,12 @@
 import * as React from "react"
 import { FormField } from "@/components/form-field"
 import { PhotoUpload } from "@/components/photo-upload"
+import { IncidentSelector } from "@/components/forms/incident-selector"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, AlertTriangle, Loader2, User, MapPin, ClipboardList, ShieldCheck } from "lucide-react"
 
 interface FormData {
+  incidentId: string
   sourceSystem: string
   reportingAgency: string
   firstName: string
@@ -31,6 +33,7 @@ interface FormErrors {
 
 export function UnidentifiedBodyForm() {
   const [formData, setFormData] = React.useState<FormData>({
+    incidentId: "",
     sourceSystem: "",
     reportingAgency: "",
     firstName: "",
@@ -66,6 +69,7 @@ export function UnidentifiedBodyForm() {
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
 
+    if (!formData.incidentId) newErrors.incidentId = "กรุณาเลือกเหตุการณ์"
     if (!formData.sourceSystem.trim()) newErrors.sourceSystem = "กรุณาระบุระบบต้นทาง"
     if (!formData.reportingAgency.trim()) newErrors.reportingAgency = "กรุณาระบุหน่วยงานที่แจ้ง"
     if (!formData.ageGroup) newErrors.ageGroup = "กรุณาเลือกช่วงวัย"
@@ -103,6 +107,7 @@ export function UnidentifiedBodyForm() {
           onClick={() => {
             setIsSubmitted(false)
             setFormData({
+              incidentId: "",
               sourceSystem: "",
               reportingAgency: "",
               firstName: "",
@@ -145,6 +150,20 @@ export function UnidentifiedBodyForm() {
           </div>
         </div>
       </div>
+
+      {/* Incident Selection */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 pb-1 border-b">
+          <AlertTriangle className="h-5 w-5 text-destructive" />
+          <h3 className="font-bold text-foreground text-md">เหตุการณ์ที่เกี่ยวข้อง</h3>
+        </div>
+        <IncidentSelector
+          value={formData.incidentId}
+          onChange={(value) => updateField("incidentId")(value)}
+          error={errors.incidentId}
+          required
+        />
+      </section>
 
       {/* Section 1: Source Info */}
       <section className="space-y-4">
