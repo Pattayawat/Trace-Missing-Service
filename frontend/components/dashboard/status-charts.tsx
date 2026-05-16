@@ -2,42 +2,43 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell } from "recharts"
 import { BarChart3 } from "lucide-react"
-import { LocationData, mockPersons } from "@/lib/mock-data"
+import type { LocationData, Person } from "@/lib/types"
 
 interface StatusChartsProps {
   locations: LocationData[]
+  persons: Person[]
 }
 
-export function StatusCharts({ locations }: StatusChartsProps) {
+export function StatusCharts({ locations, persons }: StatusChartsProps) {
   // Status breakdown data
   const statusData = [
     {
       name: "คนหาย",
-      value: mockPersons.filter((p) => p.status === "missing").length,
+      value: persons.filter((p) => p.status === "missing").length,
       fill: "var(--color-destructive)",
     },
     {
       name: "พบแล้ว",
-      value: mockPersons.filter((p) => p.status === "found").length,
+      value: persons.filter((p) => p.status === "found").length,
       fill: "var(--color-primary)",
     },
     {
       name: "ปลอดภัย",
-      value: mockPersons.filter((p) => p.status === "safe").length,
+      value: persons.filter((p) => p.status === "safe").length,
       fill: "var(--color-success)",
     },
     {
       name: "ไม่ทราบตัวตน",
-      value: mockPersons.filter((p) => p.status === "unidentified").length,
+      value: persons.filter((p) => p.status === "unidentified").length,
       fill: "var(--color-muted-foreground)",
     },
   ]
 
   // Bar chart data by location
   const barData = locations.map((loc) => ({
-    name: loc.name.split(" ")[0],
+    name: loc.name.length > 10 ? loc.name.substring(0, 10) + "..." : loc.name,
     missing: loc.missing,
     found: loc.found,
   }))
@@ -152,7 +153,7 @@ export function StatusCharts({ locations }: StatusChartsProps) {
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm font-semibold">{item.value}</span>
                     <span className="text-xs text-muted-foreground">
-                      ({Math.round((item.value / total) * 100)}%)
+                      ({total > 0 ? Math.round((item.value / total) * 100) : 0}%)
                     </span>
                   </div>
                 </div>

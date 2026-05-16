@@ -3,6 +3,7 @@
 import * as React from "react"
 import { FormField } from "@/components/form-field"
 import { PhotoUpload } from "@/components/photo-upload"
+import { IncidentSelector } from "@/components/forms/incident-selector"
 import { Button } from "@/components/ui/button"
 import {
   CheckCircle,
@@ -27,6 +28,8 @@ import {
 import { Progress } from "@/components/ui/progress"
 
 interface FormData {
+  // Incident selection
+  incidentId: string
   // Step 1: Missing Person Info
   missingFirstName: string
   missingLastName: string
@@ -68,6 +71,7 @@ const STORAGE_KEY = "missing_person_report_draft"
 export function MissingPersonForm() {
   const [currentStep, setCurrentStep] = React.useState(1)
   const [formData, setFormData] = React.useState<FormData>({
+    incidentId: "",
     missingFirstName: "",
     missingLastName: "",
     missingAge: "",
@@ -136,6 +140,7 @@ export function MissingPersonForm() {
     const newErrors: FormErrors = {}
 
     if (step === 1) {
+      if (!formData.incidentId) newErrors.incidentId = "กรุณาเลือกเหตุการณ์"
       if (!formData.missingFirstName.trim()) newErrors.missingFirstName = "กรุณาระบุชื่อจริง"
       if (!formData.missingLastName.trim()) newErrors.missingLastName = "กรุณาระบุนามสกุล"
       if (!formData.missingAge.trim()) newErrors.missingAge = "กรุณาระบุอายุ"
@@ -200,6 +205,7 @@ export function MissingPersonForm() {
             setIsSubmitted(false)
             setCurrentStep(1)
             setFormData({
+              incidentId: "",
               missingFirstName: "",
               missingLastName: "",
               missingAge: "",
@@ -264,6 +270,20 @@ export function MissingPersonForm() {
       <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
         {currentStep === 1 && (
           <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+            {/* Incident Selection */}
+            <section className="space-y-4">
+              <h3 className="text-md font-semibold text-foreground flex items-center gap-2">
+                <div className="h-1 w-4 bg-destructive rounded-full" />
+                เหตุการณ์ที่เกี่ยวข้อง
+              </h3>
+              <IncidentSelector
+                value={formData.incidentId}
+                onChange={(value) => updateField("incidentId")(value)}
+                error={errors.incidentId}
+                required
+              />
+            </section>
+
             {/* Essential Info */}
             <section className="space-y-4">
               <h3 className="text-md font-semibold text-foreground flex items-center gap-2">

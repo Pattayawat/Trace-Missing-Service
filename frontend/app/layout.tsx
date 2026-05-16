@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Prompt, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { IncidentProvider } from '@/context/incident-context'
+import { AppLayout } from '@/components/layout/app-layout'
 import './globals.css'
 
 const prompt = Prompt({ 
@@ -11,8 +13,8 @@ const prompt = Prompt({
 const _geistMono = Geist_Mono({ subsets: ["latin"], variable: '--font-geist-mono' });
 
 export const metadata: Metadata = {
-  title: 'ระบบรายงานบรรเทาสาธารณภัย | บริการฉุกเฉิน',
-  description: 'รายงานคนหาย พบร่างผู้เสียชีวิต และผู้รอดชีวิตระหว่างการปฏิบัติการบรรเทาสาธารณภัย ช่วยเหลือการกลับมาพบกันของครอบครัวและสนับสนุนความพยายามในการตอบโต้ภาวะฉุกเฉิน',
+  title: 'ระบบติดตามผู้สูญหาย | ศูนย์ประสานงานบรรเทาสาธารณภัย',
+  description: 'ระบบติดตามคนหาย ผู้ประสบภัยไม่ทราบตัวตน และผู้เสียชีวิตไม่ทราบตัวตน สำหรับเหตุการณ์ภัยพิบัติหลายเหตุการณ์พร้อมกัน',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -41,7 +43,11 @@ export default function RootLayout({
   return (
     <html lang="th" className={`${prompt.variable} bg-background`}>
       <body className="font-sans antialiased min-h-screen">
-        {children}
+        <IncidentProvider>
+          <AppLayout>
+            {children}
+          </AppLayout>
+        </IncidentProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

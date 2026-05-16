@@ -11,7 +11,7 @@ import {
   AlertTriangle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import type { Person } from "@/lib/mock-data"
+import type { Person } from "@/lib/types"
 import { useEffect, useRef } from "react"
 
 interface PersonDetailModalProps {
@@ -207,7 +207,7 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
               {person.contactPhone && (
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
                   <p className="mb-2 text-xs font-medium uppercase tracking-wider text-primary">
-                    ข้อมูลการติดต่อ
+                    ข้อมูลการต���ดต่อ
                   </p>
                   <a
                     href={`tel:${person.contactPhone}`}
