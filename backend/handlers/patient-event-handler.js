@@ -1,5 +1,7 @@
 import * as reportService from '../services/reportService.js';
-import { hospitalClient } from '../utils/hospitalClient.js';
+import { hospitalClient } from '../utils/hospital-client.js';
+
+console.log('Loading patient-event-handler.js - Dependency Check: hospital-client.js imported');
 
 /**
  * Validates if a string is a properly formatted URL.

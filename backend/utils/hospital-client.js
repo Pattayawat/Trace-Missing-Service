@@ -1,28 +1,7 @@
 /**
- * Interface for the Hospital Service API response.
- */
-export interface HospitalData {
-  hospitalId: string;
-  hospitalName: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  contactNumber?: string;
-}
-
-interface HospitalApiResponse {
-  traceId: string;
-  data: HospitalData;
-}
-
-/**
  * Hospital API Client to fetch details about a specific hospital.
  */
 export class HospitalClient {
-  private readonly baseUrl: string;
-  private readonly token: string;
-  private cache: Map<string, HospitalData>;
-
   constructor() {
     this.baseUrl = process.env.HOSPITAL_API_URL || '';
     this.token = process.env.HOSPITAL_API_TOKEN || '';
@@ -33,13 +12,13 @@ export class HospitalClient {
    * Fetches hospital details by ID. 
    * Includes simple caching to prevent redundant API calls for the same hospital.
    */
-  async getHospitalById(hospitalId: string): Promise<HospitalData | null> {
+  async getHospitalById(hospitalId) {
     if (!hospitalId) return null;
 
     // Return from cache if available
     if (this.cache.has(hospitalId)) {
       console.log(`Returning cached data for hospital: ${hospitalId}`);
-      return this.cache.get(hospitalId)!;
+      return this.cache.get(hospitalId);
     }
 
     try {
@@ -65,7 +44,7 @@ export class HospitalClient {
         throw new Error(`Hospital API returned status: ${response.status}`);
       }
 
-      const body: HospitalApiResponse = await response.json() as any;
+      const body = await response.json();
       const hospitalData = body.data;
 
       // Save to cache
@@ -73,7 +52,7 @@ export class HospitalClient {
       
       return hospitalData;
 
-    } catch (error: any) {
+    } catch (error) {
       console.error(`Failed to fetch hospital details for ${hospitalId}:`, error.message);
       // In a production environment, you might want to implement a retry logic here
       // for transient network errors (e.g. 5xx or timeout)
