@@ -111,7 +111,10 @@ export function PersonCard({
   }
 
   return (
-    <Card className="group relative overflow-hidden transition-all hover:shadow-md hover:border-primary/30 py-0">
+    <Card 
+      className="group relative overflow-hidden transition-all hover:shadow-md hover:border-primary/30 py-0 cursor-pointer"
+      onClick={() => onViewDetails(person)}
+    >
       {/* Urgent indicator for missing persons */}
       {person.status === "missing" && (
         <div
@@ -158,7 +161,7 @@ export function PersonCard({
         <div className="p-4">
           <div className="mb-2 flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <h3 className="truncate text-base font-semibold text-foreground">
+              <h3 className="truncate text-base font-semibold text-foreground group-hover:text-primary transition-colors">
                 {displayName}
               </h3>
               <p className="text-sm text-muted-foreground">
@@ -205,7 +208,6 @@ export function PersonCard({
               variant="default"
               size="sm"
               className="flex-1 gap-1.5"
-              onClick={() => onViewDetails(person)}
             >
               <Eye size={14} aria-hidden="true" />
               ดูรายละเอียด
@@ -215,7 +217,10 @@ export function PersonCard({
                 variant="outline"
                 size="sm"
                 className="gap-1.5"
-                onClick={() => onContact(person)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent card navigation
+                  onContact(person);
+                }}
                 aria-label={`ติดต่อญาติของ ${displayName}`}
               >
                 <Phone size={14} aria-hidden="true" />
