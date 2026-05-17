@@ -31,7 +31,9 @@ export const handler = async (event) => {
         firstName: data.firstName,
         lastName: data.lastName,
         shelterId: data.shelterId,
-        rosterId: data.rosterId
+        rosterId: data.rosterId,
+        lat: data.lat,
+        long: data.long
       });
 
       if (result) {

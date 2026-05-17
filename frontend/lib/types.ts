@@ -33,6 +33,8 @@ export interface Person {
   description: string
   contactPhone?: string
   incidentId: string // Link to incident
+  latitude?: number | null
+  longitude?: number | null
 }
 
 export interface EmergencyContact {
@@ -48,9 +50,16 @@ export interface PotentialMatch {
   id: string
   confidence: number
   missingPerson: Person
-  foundPerson: Person
-  matchingFeatures: string[]
-  createdAt: Date
+  matchedPerson: Person
+  matchingFeatures?: string[]
+  matchDate: string | Date
+  locationHistory?: {
+    location: string
+    timestamp: string | Date
+    type: "shelter" | "hospital" | "other"
+    description?: string
+  }[]
+  status: "MATCHING" | "VERIFIED" | "REUNITED"
 }
 
 export interface ActivityItem {

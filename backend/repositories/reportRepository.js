@@ -5,9 +5,10 @@ export const createReport = async (reportData) => {
   const query = `
     INSERT INTO missing_reports (
       reporter_id, incident_id, details, status, photo_url, location,
-      is_unidentified, source, hospital_id, age_category, gender, life_status, first_name, last_name, age, report_type
+      is_unidentified, source, hospital_id, age_category, gender, life_status, first_name, last_name, age, report_type,
+      latitude, longitude
     )
-    VALUES ($1, $2, $3, 'pending', $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    VALUES ($1, $2, $3, 'pending', $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
     RETURNING *
   `;
   const values = [
@@ -25,7 +26,9 @@ export const createReport = async (reportData) => {
     reportData.firstName || reportData.first_name || null,
     reportData.lastName || reportData.last_name || null,
     reportData.age || null,
-    reportData.reportType || reportData.report_type || 'missing-person'
+    reportData.reportType || reportData.report_type || 'missing-person',
+    reportData.latitude || reportData.lat || null,
+    reportData.longitude || reportData.long || null
   ];
   const { rows } = await db.query(query, values);
   return rows[0];
@@ -89,23 +92,40 @@ export const updateReportLocation = async (id, locationData) => {
   const db = getDbConnection();
   const query = `
     UPDATE missing_reports 
-    SET location = $1, last_updated_by = $2, life_status = COALESCE($3, life_status)
-    WHERE id = $4
+    SET location = $1, last_updated_by = $2, life_status = COALESCE($3, life_status),
+        latitude = COALESCE($4, latitude), longitude = COALESCE($5, longitude)
+    WHERE id = $6
     RETURNING *
   `;
-  const { rows } = await db.query(query, [locationData.location, locationData.source, locationData.lifeStatus, id]);
+  const { rows } = await db.query(query, [
+    locationData.location, 
+    locationData.source, 
+    locationData.lifeStatus, 
+    locationData.lat || locationData.latitude || null,
+    locationData.long || locationData.longitude || null,
+    id
+  ]);
   return rows[0];
 };
 
 export const createReunification = async (reunificationData) => {
   const db = getDbConnection();
   const query = `
-    INSERT INTO reunifications (report_id, status, details)
-    VALUES ($1, $2, $3)
-    ON CONFLICT (report_id) DO UPDATE SET status = $2, details = $3, matched_at = CURRENT_TIMESTAMP
+    INSERT INTO reunifications (report_id, matched_report_id, status, details)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT (report_id) DO UPDATE SET 
+      matched_report_id = EXCLUDED.matched_report_id,
+      status = EXCLUDED.status, 
+      details = EXCLUDED.details, 
+      matched_at = CURRENT_TIMESTAMP
     RETURNING *
   `;
-  const { rows } = await db.query(query, [reunificationData.reportId, reunificationData.status, reunificationData.details]);
+  const { rows } = await db.query(query, [
+    reunificationData.reportId, 
+    reunificationData.matchedReportId || null,
+    reunificationData.status, 
+    reunificationData.details
+  ]);
   return rows[0];
 };
 
@@ -119,13 +139,33 @@ export const getReunifications = async () => {
   const db = getDbConnection();
   const query = `
     SELECT 
-      r.*,
+      r.id, r.report_id, r.matched_report_id, r.status, r.matched_at, r.details,
       m.first_name, m.last_name, m.details as report_details, m.location as current_location,
-      m.photo_url, m.incident_id, m.status as person_status, m.report_type
+      m.photo_url, m.incident_id, m.status as person_status, m.report_type,
+      m2.first_name as matched_first_name, m2.last_name as matched_last_name, 
+      m2.details as matched_details, m2.location as matched_location,
+      m2.photo_url as matched_photo_url, m2.incident_id as matched_incident_id,
+      m2.status as matched_person_status, m2.report_type as matched_report_type
     FROM reunifications r
     JOIN missing_reports m ON r.report_id = m.id
+    LEFT JOIN missing_reports m2 ON r.matched_report_id = m2.id
     ORDER BY r.matched_at DESC
   `;
   const { rows } = await db.query(query);
+  return rows;
+};
+
+export const findPotentialUnidentifiedMatches = async (missingReport) => {
+  const db = getDbConnection();
+  // Simple matching logic: gender match and similar location or incident
+  const query = `
+    SELECT * FROM missing_reports 
+    WHERE is_unidentified = true 
+    AND (gender = $1 OR gender = 'unknown')
+    AND incident_id = $2
+    AND deleted_at IS NULL
+    LIMIT 5
+  `;
+  const { rows } = await db.query(query, [missingReport.gender, missingReport.incident_id]);
   return rows;
 };

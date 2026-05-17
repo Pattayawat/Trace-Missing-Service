@@ -220,6 +220,8 @@ export async function fetchPersons(incidentId?: string, type?: Person["type"]): 
         photoUrl: r.photo_url || null,
         description: r.details?.split(' - ')[1] || r.details || "",
         incidentId: r.incident_id,
+        latitude: r.latitude,
+        longitude: r.longitude,
       };
     });
   } catch (e) {
@@ -287,13 +289,17 @@ export async function fetchLocationData(): Promise<LocationData[]> {
   persons.forEach((p) => {
     const locName = p.location.split(',')[0].trim();
     if (!locationMap[locName]) {
-      const coords = coordinates[locName] || { lat: 13.7563 + (Math.random() - 0.5), lng: 100.5018 + (Math.random() - 0.5) };
+      // Use report's coordinates if available, otherwise fallback to hardcoded or random
+      const lat = p.latitude || coordinates[locName]?.lat || 13.7563 + (Math.random() - 0.5);
+      const lng = p.longitude || coordinates[locName]?.lng || 100.5018 + (Math.random() - 0.5);
+      
       locationMap[locName] = {
         name: locName,
         missing: 0,
         found: 0,
         unidentified: 0,
-        ...coords
+        lat: Number(lat),
+        lng: Number(lng)
       };
     }
 
@@ -314,42 +320,87 @@ export async function fetchPotentialMatches(): Promise<PotentialMatch[]> {
     if (!response.ok) return [];
     const data = await response.json();
     
-    return data.map((r: any) => ({
-      id: r.id.toString(),
-      missingPerson: {
+    return data.map((r: any) => {
+      // Missing Person details
+      const missingPerson: Person = {
         id: r.report_id.toString(),
-        name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : "Unknown",
-        ageGroup: r.age_category || "ADULT",
+        type: "missing-person",
+        status: r.person_status === 'pending' ? 'missing' : 'found',
+        name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : (r.report_details?.split(' - ')[0] || "Unknown"),
+        citizenId: r.citizen_id || null,
+        caseId: `MP-2026-${r.report_id}`,
+        ageGroup: r.age_category || "adult",
+        age: r.age,
         gender: r.gender || "unknown",
-        photoUrl: r.photo_url || null,
-        lastSeenLocation: r.current_location,
+        location: r.current_location || "Unknown",
         lastSeenDate: r.matched_at,
-        incidentId: r.incident_id,
-        description: r.report_details
-      },
-      matchedPerson: {
-        id: `matched-${r.id}`,
-        name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : "Unidentified",
-        ageGroup: r.age_category || "ADULT",
-        gender: r.gender || "unknown",
         photoUrl: r.photo_url || null,
-        currentLocation: r.current_location,
-        foundDate: r.matched_at,
+        description: r.report_details?.split(' - ')[1] || r.report_details || "",
         incidentId: r.incident_id,
-        description: `Matched via: ${r.details?.matchedVia || 'System'}`
-      },
-      confidence: 0.95,
-      status: r.status as any,
-      matchDate: r.matched_at,
-      locationHistory: [
-        {
-          location: r.current_location,
-          timestamp: r.matched_at,
-          type: r.details?.shelterId ? "shelter" : "hospital",
-          description: r.details?.shelterId ? `Checked in at shelter ${r.details.shelterId}` : "Transferred to hospital"
-        }
-      ]
-    }));
+      };
+
+      // Matched Person (could be another report OR shelter info from details)
+      let matchedPerson: Person;
+      
+      if (r.matched_report_id) {
+        // Match between two reports in system (e.g. Missing ↔ Unidentified Victim)
+        let matchedType: Person["type"] = "missing-person";
+        if (r.matched_report_type === "unidentified-victim") matchedType = "survivor";
+        if (r.matched_report_type === "unidentified-deceased") matchedType = "unidentified-body";
+
+        matchedPerson = {
+          id: r.matched_report_id.toString(),
+          type: matchedType,
+          status: r.matched_person_status === 'pending' ? 'missing' : 'found',
+          name: r.matched_first_name && r.matched_last_name ? `${r.matched_first_name} ${r.matched_last_name}` : (r.matched_details?.split(' - ')[0] || "บุคคลไม่ทราบตัวตน"),
+          citizenId: null,
+          caseId: `MP-2026-${r.matched_report_id}`,
+          ageGroup: r.matched_age_category || "adult",
+          age: null,
+          gender: r.matched_gender || "unknown",
+          location: r.matched_location || "Unknown",
+          lastSeenDate: r.matched_at,
+          photoUrl: r.matched_photo_url || null,
+          description: r.matched_details?.split(' - ')[1] || r.matched_details || "",
+          incidentId: r.matched_incident_id,
+        };
+      } else {
+        // Match with external shelter data stored in JSONB details
+        matchedPerson = {
+          id: `ext-${r.id}`,
+          type: "survivor",
+          status: "safe",
+          name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : "บุคคลไม่ทราบตัวตน",
+          citizenId: null,
+          caseId: "EXT-MATCH",
+          ageGroup: "adult",
+          age: null,
+          gender: r.gender || "unknown",
+          location: r.details?.shelterId ? `Shelter ${r.details.shelterId}` : r.current_location,
+          lastSeenDate: r.matched_at,
+          photoUrl: r.photo_url || null,
+          description: `Matched via: ${r.details?.matchedVia || 'System'}. Latest location reported by external service.`,
+          incidentId: r.incident_id,
+        };
+      }
+
+      return {
+        id: r.id.toString(),
+        missingPerson,
+        matchedPerson,
+        confidence: 0.95,
+        status: r.status as any,
+        matchDate: r.matched_at,
+        locationHistory: [
+          {
+            location: r.current_location,
+            timestamp: r.matched_at,
+            type: r.details?.shelterId ? "shelter" : "hospital",
+            description: r.details?.shelterId ? `Checked in at shelter ${r.details.shelterId}` : "Transferred to hospital"
+          }
+        ]
+      };
+    });
   } catch (e) {
     console.error("Failed to fetch reunifications:", e);
     return [];
