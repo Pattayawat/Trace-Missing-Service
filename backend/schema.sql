@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS missing_reports (
   reporter_id VARCHAR(255),
   incident_id VARCHAR(255),
   details TEXT,
-  status VARCHAR(50) DEFAULT 'pending',
+  status VARCHAR(50) DEFAULT 'REPORTED',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP,

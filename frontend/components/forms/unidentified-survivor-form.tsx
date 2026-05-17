@@ -94,7 +94,7 @@ export function UnidentifiedSurvivorForm() {
     try {
       await createPerson({
         type: "survivor",
-        status: "safe",
+        status: "REPORTED",
         name: formData.firstName ? `${formData.firstName} ${formData.lastName}` : null,
         citizenId: formData.identityDocs || null,
         age: null,

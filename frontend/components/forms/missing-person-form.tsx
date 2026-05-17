@@ -181,7 +181,7 @@ export function MissingPersonForm() {
     try {
       await createPerson({
         type: "missing-person",
-        status: "missing",
+        status: "REPORTED",
         name: `${formData.missingFirstName} ${formData.missingLastName}`,
         citizenId: formData.missingIdCard || null,
         age: parseInt(formData.missingAge) || null,

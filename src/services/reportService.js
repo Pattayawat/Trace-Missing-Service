@@ -21,7 +21,7 @@ export const createMissingReport = async (reportData, userId, correlationId) => 
     // 2. Auto-create Case
     const caseRecord = await caseRepo.createCase(client, {
       reportId: report.id,
-      status: 'investigating',
+      status: 'VERIFYING',
       priority: 'normal'
     });
 

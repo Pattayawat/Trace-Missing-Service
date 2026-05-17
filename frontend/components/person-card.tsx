@@ -17,31 +17,31 @@ interface PersonCardProps {
 
 function StatusBadge({ status }: { status: Person["status"] }) {
   const config: Record<string, { label: string, className: string }> = {
-    missing: {
-      label: "คนหาย",
-      className: "bg-destructive text-destructive-foreground",
+    REPORTED: {
+      label: "แจ้งเคส",
+      className: "bg-slate-500 text-white",
     },
-    found: {
-      label: "พบแล้ว",
-      className: "bg-primary text-primary-foreground",
-    },
-    safe: {
-      label: "ปลอดภัย",
-      className: "bg-success text-success-foreground",
-    },
-    unidentified: {
-      label: "ไม่ทราบตัวตน",
-      className: "bg-muted text-muted-foreground",
-    },
-    investigating: {
+    VERIFYING: {
       label: "กำลังตรวจสอบ",
       className: "bg-warning text-warning-foreground",
     },
-    matching: {
+    ACTIVE: {
+      label: "เปิดเคส",
+      className: "bg-destructive text-destructive-foreground",
+    },
+    MATCHING: {
       label: "กำลังจับคู่",
       className: "bg-info text-info-foreground",
     },
-    closed: {
+    VERIFIED: {
+      label: "ยืนยันแล้ว",
+      className: "bg-success text-success-foreground",
+    },
+    REUNITED: {
+      label: "รวมครอบครัวแล้ว",
+      className: "bg-primary text-primary-foreground",
+    },
+    CLOSED: {
       label: "ปิดเคสแล้ว",
       className: "bg-slate-600 text-white",
     },
@@ -115,8 +115,8 @@ export function PersonCard({
       className="group relative overflow-hidden transition-all hover:shadow-md hover:border-primary/30 py-0 cursor-pointer"
       onClick={() => onViewDetails(person)}
     >
-      {/* Urgent indicator for missing persons */}
-      {person.status === "missing" && (
+      {/* Urgent indicator for active cases */}
+      {["REPORTED", "VERIFYING", "ACTIVE", "MATCHING"].includes(person.status) && (
         <div
           className="absolute inset-x-0 top-0 h-1 bg-destructive"
           aria-hidden="true"

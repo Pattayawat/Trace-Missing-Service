@@ -54,11 +54,13 @@ function StatusControl({ id, currentStatus, onUpdate }: { id: string, currentSta
   }
 
   const statusOptions = [
-    { value: "missing", label: "คนหาย (Missing)", color: "bg-destructive text-white" },
-    { value: "investigating", label: "กำลังตรวจสอบ (Investigating)", color: "bg-warning text-black" },
-    { value: "matching", label: "กำลังจับคู่ (Matching)", color: "bg-blue-500 text-white" },
-    { value: "reunited", label: "รวมตัวแล้ว (Reunited)", color: "bg-success text-white" },
-    { value: "closed", label: "ปิดเคส (Closed)", color: "bg-slate-600 text-white" },
+    { value: "REPORTED", label: "แจ้งเคส (Reported)", color: "bg-slate-500 text-white" },
+    { value: "VERIFYING", label: "กำลังตรวจสอบ (Verifying)", color: "bg-warning text-black" },
+    { value: "ACTIVE", label: "เปิดเคส/ติดตาม (Active)", color: "bg-destructive text-white" },
+    { value: "MATCHING", label: "กำลังจับคู่ (Matching)", color: "bg-blue-500 text-white" },
+    { value: "VERIFIED", label: "ยืนยันแล้ว (Verified)", color: "bg-success text-white" },
+    { value: "REUNITED", label: "ส่งคืนครอบครัว (Reunited)", color: "bg-primary text-white" },
+    { value: "CLOSED", label: "ปิดเคส (Closed)", color: "bg-slate-600 text-white" },
   ]
 
   return (

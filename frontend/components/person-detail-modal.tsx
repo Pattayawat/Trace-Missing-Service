@@ -78,31 +78,31 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
     `${person.gender === "male" ? "ผู้ชาย" : person.gender === "female" ? "ผู้หญิง" : "บุคคล"}ไม่ทราบตัวตน`
 
   const statusConfig: Record<string, { label: string, className: string }> = {
-    missing: {
-      label: "คนหาย",
-      className: "bg-destructive text-destructive-foreground",
+    REPORTED: {
+      label: "แจ้งเคส",
+      className: "bg-slate-500 text-white",
     },
-    found: {
-      label: "พบแล้ว",
-      className: "bg-primary text-primary-foreground",
-    },
-    safe: {
-      label: "ปลอดภัย",
-      className: "bg-success text-success-foreground",
-    },
-    unidentified: {
-      label: "ไม่ทราบตัวตน",
-      className: "bg-muted text-muted-foreground",
-    },
-    investigating: {
+    VERIFYING: {
       label: "กำลังตรวจสอบ",
       className: "bg-warning text-warning-foreground",
     },
-    matching: {
+    ACTIVE: {
+      label: "เปิดเคส",
+      className: "bg-destructive text-destructive-foreground",
+    },
+    MATCHING: {
       label: "กำลังจับคู่",
       className: "bg-info text-info-foreground",
     },
-    closed: {
+    VERIFIED: {
+      label: "ยืนยันแล้ว",
+      className: "bg-success text-success-foreground",
+    },
+    REUNITED: {
+      label: "รวมครอบครัวแล้ว",
+      className: "bg-primary text-primary-foreground",
+    },
+    CLOSED: {
       label: "ปิดเคสแล้ว",
       className: "bg-slate-600 text-white",
     }
@@ -173,12 +173,13 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
                       <SelectValue placeholder={currentStatus.label} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="missing">คนหาย (Missing)</SelectItem>
-                      <SelectItem value="found">พบแล้ว (Found)</SelectItem>
-                      <SelectItem value="safe">ปลอดภัย (Safe)</SelectItem>
-                      <SelectItem value="investigating">กำลังตรวจสอบ (Investigating)</SelectItem>
-                      <SelectItem value="matching">กำลังจับคู่ (Matching)</SelectItem>
-                      <SelectItem value="closed">ปิดเคสแล้ว (Closed)</SelectItem>
+                      <SelectItem value="REPORTED">แจ้งเคส (Reported)</SelectItem>
+                      <SelectItem value="VERIFYING">กำลังตรวจสอบ (Verifying)</SelectItem>
+                      <SelectItem value="ACTIVE">เปิดเคส (Active)</SelectItem>
+                      <SelectItem value="MATCHING">กำลังจับคู่ (Matching)</SelectItem>
+                      <SelectItem value="VERIFIED">ยืนยันแล้ว (Verified)</SelectItem>
+                      <SelectItem value="REUNITED">รวมครอบครัวแล้ว (Reunited)</SelectItem>
+                      <SelectItem value="CLOSED">ปิดเคสแล้ว (Closed)</SelectItem>
                     </SelectContent>
                   </Select>
                   {isUpdating && (
@@ -271,8 +272,8 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
             </div>
           </div>
 
-          {/* Warning for missing */}
-          {person.status === "missing" && (
+          {/* Warning for active */}
+          {["REPORTED", "VERIFYING", "ACTIVE", "MATCHING"].includes(person.status) && (
             <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />

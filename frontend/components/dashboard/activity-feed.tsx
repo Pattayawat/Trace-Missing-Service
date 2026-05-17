@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 import {
   UserPlus,
   RefreshCw,
@@ -20,7 +21,7 @@ interface ActivityFeedProps {
 
 function formatTimeAgo(date: Date): string {
   const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
+  const diffMs = now.getTime() - (date instanceof Date ? date.getTime() : new Date(date).getTime())
   const diffMins = Math.floor(diffMs / (1000 * 60))
 
   if (diffMins < 1) return "เมื่อสักครู่"
@@ -61,6 +62,8 @@ function getActivityBadge(type: ActivityItem["type"]) {
 }
 
 export function ActivityFeed({ activities }: ActivityFeedProps) {
+  const router = useRouter()
+
   return (
     <Card className="h-full shadow-sm">
       <CardHeader className="pb-3">
@@ -89,17 +92,23 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
                 <article
                   key={activity.id}
                   className={cn(
-                    "group relative flex gap-3 rounded-lg border border-border/60 bg-card p-3 transition-colors hover:bg-muted/50",
+                    "group relative flex gap-3 rounded-lg border border-border/60 bg-card p-3 transition-colors hover:bg-muted/50 cursor-pointer",
                     index === 0 && "border-primary/30 bg-primary/5"
                   )}
                   aria-label={activity.message}
+                  onClick={() => {
+                    // Extract numeric ID from activity ID act-NUM or from caseId
+                    const parts = activity.id.split('-')
+                    const id = parts[parts.length - 1]
+                    if (id) router.push(`/cases/detail?id=${id}`)
+                  }}
                 >
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
                     <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   </div>
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium leading-snug text-foreground">
+                      <p className="text-sm font-medium leading-snug text-foreground group-hover:text-primary transition-colors">
                         {activity.message}
                       </p>
                       <Badge
@@ -120,7 +129,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground/80">
                       <Clock className="h-3 w-3" aria-hidden="true" />
-                      <time dateTime={activity.timestamp.toISOString()}>
+                      <time dateTime={new Date(activity.timestamp).toISOString()}>
                         {formatTimeAgo(activity.timestamp)}
                       </time>
                     </div>

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS missing_reports (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     reporter_id VARCHAR(255) NOT NULL,
     incident_id UUID,
-    status VARCHAR(50) NOT NULL DEFAULT 'open',
+    status VARCHAR(50) NOT NULL DEFAULT 'REPORTED',
     details TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS missing_reports (
 CREATE TABLE IF NOT EXISTS cases (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     report_id UUID REFERENCES missing_reports(id),
-    status VARCHAR(50) NOT NULL DEFAULT 'investigating',
+    status VARCHAR(50) NOT NULL DEFAULT 'VERIFYING',
     priority VARCHAR(50) DEFAULT 'normal',
     assigned_officer_id VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -140,3 +140,4 @@ CREATE TABLE IF NOT EXISTS verification_requests (
 CREATE INDEX idx_outbox_events_status ON outbox_events(status, next_retry_at) WHERE status = 'pending';
 CREATE INDEX idx_shelter_person_cache_embedding ON shelter_person_cache USING ivfflat (face_embedding vector_cosine_ops);
 CREATE INDEX idx_person_photos_embedding ON person_photos USING ivfflat (face_embedding vector_cosine_ops);
+    

@@ -5,23 +5,28 @@ const sqs = new SQSClient({});
 
 export const createReport = async (reportData) => {
   const report = await reportRepo.createReport(reportData);
+  await reportRepo.addCaseEvent(report.id, 'REPORT_CREATED', 'Missing person report created in system');
   
   // 1. If it's a Missing Person, try to match with existing Unidentified Victims
   if (!report.is_unidentified) {
     const potentialMatches = await reportRepo.findPotentialUnidentifiedMatches(report);
-    for (const match of potentialMatches) {
-      await reportRepo.createReunification({
-        reportId: report.id,
-        matchedReportId: match.id,
-        status: 'MATCHING',
-        details: { matchedVia: 'characteristic_similarity', matchType: 'database' }
-      });
+    if (potentialMatches.length > 0) {
+      console.log(`Found ${potentialMatches.length} internal matches for new report: ${report.id}`);
+      
+      // Update status to MATCHING
+      await reportRepo.updateReportStatus(report.id, 'MATCHING');
+      await reportRepo.addCaseEvent(report.id, 'MATCH_DETECTED', `Found ${potentialMatches.length} potential matches in unidentified reports database`);
+
+      for (const match of potentialMatches) {
+        await reportRepo.createReunification({
+          reportId: report.id,
+          matchedReportId: match.id,
+          status: 'MATCHING',
+          details: { matchedVia: 'characteristic_similarity', matchType: 'database' }
+        });
+      }
     }
   } 
-  // 2. If it's an Unidentified Victim, try to find the Missing Person
-  else {
-     // Logic for reverse matching could go here
-  }
 
   // Trigger async matching job (SQS)
   try {
@@ -45,6 +50,8 @@ export const listIncidents = () => reportRepo.getIncidents();
 export const listReunifications = () => reportRepo.getReunifications();
 export const getReport = (id) => reportRepo.getReportById(id);
 export const getCaseDetail = (id) => reportRepo.getFullCaseDetail(id);
+export const getStats = (incidentId) => reportRepo.getSystemStats(incidentId);
+
 export const updateReportStatus = async (id, status) => {
   const updated = await reportRepo.updateReportStatus(id, status);
   await reportRepo.addCaseEvent(id, 'STATUS_CHANGED', `Case status manually updated to ${status.toUpperCase()}`);
@@ -71,13 +78,20 @@ export const processPersonMovement = async (data) => {
       long: data.longitude || data.long
     });
     
-    // If it's a system update and matched, ensure reunification status is updated
+    await reportRepo.addCaseEvent(existing.id, 'LOCATION_UPDATED', `Person location updated to ${data.location} via ${data.source}`);
+    
+    // Auto-transition to MATCHING if moved via Pre-Arrival (Hospital)
+    if (data.source === 'PreArrivalNotificationService' && (existing.status === 'REPORTED' || existing.status === 'ACTIVE' || existing.status === 'missing')) {
+      await updateReportStatus(existing.id, 'MATCHING');
+    }
+
     return updated;
   }
 
   // Create new record if not found
   console.log('Creating new record for movement event');
-  return await createReport(data); // Use the logic above to check for matches
+  const newReport = await createReport(data);
+  return newReport;
 };
 
 export const matchAndReunify = async (shelterData) => {
@@ -94,7 +108,7 @@ export const matchAndReunify = async (shelterData) => {
   if (matched) {
     console.log(`Match found! Updating reunification for report: ${matched.id}`);
     
-    // Update person location
+    // 1. Update person location and status
     await reportRepo.updateReportLocation(matched.id, {
       location: `Shelter: ${shelterData.shelterId}`,
       source: 'ShelterService',
@@ -103,7 +117,10 @@ export const matchAndReunify = async (shelterData) => {
       long: shelterData.long
     });
 
-    // Create/Update reunification status
+    await reportRepo.updateReportStatus(matched.id, 'MATCHING');
+    await reportRepo.addCaseEvent(matched.id, 'MATCH_DETECTED', `Potential match found at Shelter ${shelterData.shelterId} (Shelter Service Check-in)`);
+
+    // 2. Create/Update reunification status
     return await reportRepo.createReunification({
       reportId: matched.id,
       status: 'MATCHING',

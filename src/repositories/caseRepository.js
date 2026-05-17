@@ -7,7 +7,7 @@ export const createCase = async (client, caseData) => {
     VALUES ($1, $2, $3, $4)
     RETURNING *
   `;
-  const values = [caseData.reportId, caseData.status || 'investigating', caseData.priority || 'normal', caseData.assignedOfficerId];
+  const values = [caseData.reportId, caseData.status || 'VERIFYING', caseData.priority || 'normal', caseData.assignedOfficerId];
   const { rows } = await db.query(query, values);
   return rows[0];
 };

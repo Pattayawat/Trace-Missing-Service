@@ -64,7 +64,7 @@ export const mockPotentialMatches: PotentialMatch[] = [
     missingPerson: {
       id: "mp-match-1",
       type: "missing-person",
-      status: "missing",
+      status: "ACTIVE",
       name: "มาเรีย ซานโตส",
       citizenId: "1-2345-67890-12-3",
       caseId: "MP-2026-0891",
@@ -78,10 +78,10 @@ export const mockPotentialMatches: PotentialMatch[] = [
       contactPhone: "081-555-0123",
       incidentId: "INC-2026-001",
     },
-    foundPerson: {
+    matchedPerson: {
       id: "sv-match-1",
       type: "survivor",
-      status: "safe",
+      status: "ACTIVE",
       name: "หญิงไม่ทราบชื่อ",
       citizenId: null,
       caseId: "SV-2026-0161",
@@ -95,7 +95,8 @@ export const mockPotentialMatches: PotentialMatch[] = [
       incidentId: "INC-2026-001",
     },
     matchingFeatures: ["ช่วงอายุ", "เพศ", "สีผม", "ส่วนสูง", "ลักษณะเสื้อผ้า"],
-    createdAt: new Date(Date.now() - 30 * 60 * 1000),
+    matchDate: new Date(Date.now() - 30 * 60 * 1000),
+    status: "MATCHING"
   },
   {
     id: "match-2",
@@ -103,7 +104,7 @@ export const mockPotentialMatches: PotentialMatch[] = [
     missingPerson: {
       id: "mp-match-2",
       type: "missing-person",
-      status: "missing",
+      status: "ACTIVE",
       name: "โทมัส วิลเลียมส์",
       citizenId: "3-4567-89012-34-5",
       caseId: "MP-2026-0893",
@@ -117,10 +118,10 @@ export const mockPotentialMatches: PotentialMatch[] = [
       contactPhone: "081-555-0127",
       incidentId: "INC-2026-002",
     },
-    foundPerson: {
+    matchedPerson: {
       id: "sv-match-2",
       type: "survivor",
-      status: "safe",
+      status: "ACTIVE",
       name: "ชายสูงอายุไม่ทราบชื่อ",
       citizenId: null,
       caseId: "SV-2026-0162",
@@ -134,7 +135,8 @@ export const mockPotentialMatches: PotentialMatch[] = [
       incidentId: "INC-2026-002",
     },
     matchingFeatures: ["ช่วงอายุ", "เพศ", "แว่นตา", "อุปกรณ์ช่วยเดิน", "ปัญหาทางการได้ยิน"],
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    matchDate: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    status: "MATCHING"
   },
 ]
 
@@ -215,7 +217,7 @@ export const mockPersons: Person[] = [
   {
     id: "1",
     type: "missing-person",
-    status: "missing",
+    status: "ACTIVE",
     name: "มาเรีย ซานโตส",
     citizenId: "1-2345-67890-12-3",
     caseId: "MP-2026-0891",
@@ -232,7 +234,7 @@ export const mockPersons: Person[] = [
   {
     id: "2",
     type: "missing-person",
-    status: "missing",
+    status: "ACTIVE",
     name: "เจมส์ โรดริเกซ",
     citizenId: "1-3456-78901-23-4",
     caseId: "MP-2026-0892",
@@ -249,7 +251,7 @@ export const mockPersons: Person[] = [
   {
     id: "3",
     type: "survivor",
-    status: "safe",
+    status: "ACTIVE",
     name: "เอเลน่า คิม",
     citizenId: "1-4567-89012-34-5",
     caseId: "SV-2026-0156",
@@ -266,7 +268,7 @@ export const mockPersons: Person[] = [
   {
     id: "4",
     type: "unidentified-body",
-    status: "unidentified",
+    status: "ACTIVE",
     name: null,
     citizenId: null,
     caseId: "UB-2026-0034",
@@ -282,7 +284,7 @@ export const mockPersons: Person[] = [
   {
     id: "5",
     type: "missing-person",
-    status: "found",
+    status: "REUNITED",
     name: "โรเบิร์ต เฉิน",
     citizenId: "1-5678-90123-45-6",
     caseId: "MP-2026-0889",
@@ -299,7 +301,7 @@ export const mockPersons: Person[] = [
   {
     id: "6",
     type: "survivor",
-    status: "safe",
+    status: "ACTIVE",
     name: "หญิงไม่ทราบชื่อ",
     citizenId: null,
     caseId: "SV-2026-0157",
@@ -315,7 +317,7 @@ export const mockPersons: Person[] = [
   {
     id: "7",
     type: "missing-person",
-    status: "missing",
+    status: "ACTIVE",
     name: "โทมัส วิลเลียมส์",
     citizenId: "3-4567-89012-34-5",
     caseId: "MP-2026-0893",
@@ -332,7 +334,7 @@ export const mockPersons: Person[] = [
   {
     id: "8",
     type: "unidentified-body",
-    status: "unidentified",
+    status: "ACTIVE",
     name: null,
     citizenId: null,
     caseId: "UB-2026-0035",
@@ -348,7 +350,7 @@ export const mockPersons: Person[] = [
   {
     id: "9",
     type: "survivor",
-    status: "safe",
+    status: "ACTIVE",
     name: "เดวิด พาร์ค",
     citizenId: "1-6789-01234-56-7",
     caseId: "SV-2026-0158",
@@ -365,7 +367,7 @@ export const mockPersons: Person[] = [
   {
     id: "10",
     type: "missing-person",
-    status: "missing",
+    status: "ACTIVE",
     name: "โซฟี แอนเดอร์สัน",
     citizenId: "1-7890-12345-67-8",
     caseId: "MP-2026-0894",
@@ -382,7 +384,7 @@ export const mockPersons: Person[] = [
   {
     id: "11",
     type: "survivor",
-    status: "safe",
+    status: "ACTIVE",
     name: "ไมเคิล บราวน์",
     citizenId: "1-8901-23456-78-9",
     caseId: "SV-2026-0159",
@@ -399,7 +401,7 @@ export const mockPersons: Person[] = [
   {
     id: "12",
     type: "missing-person",
-    status: "missing",
+    status: "ACTIVE",
     name: "ลิซ่า มาร์ติเนซ",
     citizenId: "1-9012-34567-89-0",
     caseId: "MP-2026-0895",

@@ -14,7 +14,7 @@ export interface Incident {
 }
 
 // Person types - managed by this service
-export type PersonStatus = "missing" | "found" | "unidentified" | "safe" | "investigating" | "matching" | "closed" | "reunited"
+export type PersonStatus = "REPORTED" | "VERIFYING" | "ACTIVE" | "MATCHING" | "VERIFIED" | "REUNITED" | "CLOSED"
 export type PersonType = "missing-person" | "unidentified-body" | "survivor"
 
 export interface Person {

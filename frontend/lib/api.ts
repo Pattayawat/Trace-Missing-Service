@@ -237,8 +237,8 @@ export async function fetchActivities(incidentId?: string): Promise<ActivityItem
   // Create real activities from person reports
   const activities: ActivityItem[] = persons.slice(0, 10).map((p) => ({
     id: `act-${p.id}`,
-    type: p.status === 'found' ? 'status_update' : 'new_report',
-    message: p.status === 'found' ? `พบตัว ${p.name || 'บุคคลนิรนาม'} แล้ว` : `รับแจ้งเหตุ ${p.type === 'missing-person' ? 'คนหาย' : 'บุคคลนิรนาม'} ใหม่: ${p.name || 'ไม่ทราบชื่อ'}`,
+    type: (p.status === 'REUNITED' || p.status === 'VERIFIED') ? 'status_update' : 'new_report',
+    message: (p.status === 'REUNITED' || p.status === 'VERIFIED') ? `พบตัว ${p.name || 'บุคคลนิรนาม'} แล้ว` : `รับแจ้งเหตุ ${p.type === 'missing-person' ? 'คนหาย' : 'บุคคลนิรนาม'} ใหม่: ${p.name || 'ไม่ทราบชื่อ'}`,
     location: p.location,
     timestamp: new Date(p.lastSeenDate),
     caseId: p.caseId,
@@ -250,16 +250,31 @@ export async function fetchActivities(incidentId?: string): Promise<ActivityItem
 
 // Fetch dashboard metrics
 export async function fetchDashboardMetrics(incidentId?: string): Promise<DashboardMetrics> {
-  const persons = await fetchPersons(incidentId);
+  if (!API_URL) {
+     return { totalMissing: 0, totalFound: 0, totalSafe: 0, totalUnidentified: 0, openCases: 0 };
+  }
 
-  return {
-    totalMissing: persons.filter((p) => p.type === "missing-person" && (p.status === "missing" || p.status === "investigating" || p.status === "matching")).length,
-    totalFound: persons.filter((p) => p.status === "found" || p.status === "reunited").length,
-    totalSafe: persons.filter((p) => p.type === "survivor" || p.status === "safe").length,
-    totalUnidentified: persons.filter((p) => p.type === "unidentified-body" || p.status === "unidentified").length,
-    openCases: persons.filter((p) => p.status === "missing" || p.status === "investigating" || p.status === "matching").length,
+  try {
+    const url = new URL(`${API_URL}/stats`);
+    if (incidentId) url.searchParams.append('incidentId', incidentId);
+
+    const response = await fetch(url.toString());
+    if (!response.ok) throw new Error('Failed to fetch stats');
+    const data = await response.json();
+
+    return {
+      totalMissing: parseInt(data.total_missing),
+      totalFound: parseInt(data.total_found),
+      totalSafe: parseInt(data.total_safe),
+      totalUnidentified: parseInt(data.total_unidentified),
+      openCases: parseInt(data.open_cases),
+    };
+  } catch (e) {
+    console.error("Failed to fetch dashboard metrics", e);
+    return { totalMissing: 0, totalFound: 0, totalSafe: 0, totalUnidentified: 0, openCases: 0 };
   }
 }
+
 
 // Get incident case counts
 export async function fetchIncidentCaseCounts(): Promise<Record<string, number>> {
@@ -304,8 +319,8 @@ export async function fetchLocationData(): Promise<LocationData[]> {
       };
     }
 
-    if (p.status === 'missing') locationMap[locName].missing++;
-    if (p.status === 'found') locationMap[locName].found++;
+    if (p.status === 'ACTIVE' || p.status === 'REPORTED') locationMap[locName].missing++;
+    if (p.status === 'REUNITED' || p.status === 'VERIFIED') locationMap[locName].found++;
     if (p.type === 'unidentified-body') locationMap[locName].unidentified++;
   });
 
@@ -370,7 +385,7 @@ export async function fetchPotentialMatches(): Promise<PotentialMatch[]> {
         matchedPerson = {
           id: `ext-${r.id}`,
           type: "survivor",
-          status: "safe",
+          status: "ACTIVE",
           name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : "บุคคลไม่ทราบตัวตน",
           citizenId: null,
           caseId: "EXT-MATCH",

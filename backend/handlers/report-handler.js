@@ -46,19 +46,28 @@ export const handler = async (event) => {
       };
     }
 
+    if (routeKey === 'GET /stats') {
+      const { incidentId } = queryStringParameters || {};
+      const stats = await reportService.getStats(incidentId);
+      return {
+        statusCode: 200,
+        body: JSON.stringify(stats),
+      };
+    }
+
     if (routeKey === 'PATCH /reports/{id}/status') {
       const { id } = pathParameters;
       const { status } = JSON.parse(body);
       
-      const validStatuses = ['missing', 'found', 'safe', 'unidentified', 'closed', 'investigating', 'matching'];
-      if (!validStatuses.includes(status.toLowerCase())) {
+      const validStatuses = ['REPORTED', 'VERIFYING', 'ACTIVE', 'MATCHING', 'VERIFIED', 'REUNITED', 'CLOSED'];
+      if (!validStatuses.includes(status.toUpperCase())) {
         return {
           statusCode: 400,
           body: JSON.stringify({ message: 'Invalid status' }),
         };
       }
 
-      const updated = await reportService.updateReportStatus(id, status.toLowerCase());
+      const updated = await reportService.updateReportStatus(id, status.toUpperCase());
       return {
         statusCode: 200,
         body: JSON.stringify(updated),

@@ -93,7 +93,7 @@ export function UnidentifiedBodyForm() {
     try {
       await createPerson({
         type: "unidentified-body",
-        status: "unidentified",
+        status: "REPORTED",
         name: formData.firstName ? `${formData.firstName} ${formData.lastName}` : null,
         citizenId: formData.identityDocs || null,
         age: null,

@@ -220,10 +220,13 @@ export function SearchFilters({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">ทุกสถานะ</SelectItem>
-                  <SelectItem value="missing">คนหาย</SelectItem>
-                  <SelectItem value="found">พบแล้ว</SelectItem>
-                  <SelectItem value="safe">ปลอดภัย / ผู้รอดชีวิต</SelectItem>
-                  <SelectItem value="unidentified">ไม่ทราบตัวตน</SelectItem>
+                  <SelectItem value="REPORTED">แจ้งเคส (Reported)</SelectItem>
+                  <SelectItem value="VERIFYING">กำลังตรวจสอบ (Verifying)</SelectItem>
+                  <SelectItem value="ACTIVE">เปิดเคส (Active)</SelectItem>
+                  <SelectItem value="MATCHING">กำลังจับคู่ (Matching)</SelectItem>
+                  <SelectItem value="VERIFIED">ยืนยันแล้ว (Verified)</SelectItem>
+                  <SelectItem value="REUNITED">รวมครอบครัวแล้ว (Reunited)</SelectItem>
+                  <SelectItem value="CLOSED">ปิดเคสแล้ว (Closed)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

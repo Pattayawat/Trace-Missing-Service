@@ -24,7 +24,6 @@ import { MetricCard } from "@/components/dashboard/metric-card"
 import { StatsSummary } from "@/components/stats-summary"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PersonCard } from "@/components/person-card"
-import { PersonDetailModal } from "@/components/person-detail-modal"
 import { useState, useMemo } from "react"
 import type { Person } from "@/lib/types"
 
@@ -47,13 +46,6 @@ export default function IncidentDetailContent() {
     `persons-${incidentId}`,
     () => fetchPersons(incidentId)
   )
-
-  const stats = useMemo(() => ({
-    missing: persons.filter(p => p.status === "missing" || p.status === "investigating" || p.status === "matching").length,
-    found: persons.filter(p => p.status === "found" || p.status === "closed").length,
-    safe: persons.filter(p => p.status === "safe" || (p.type === "survivor" && p.status !== "found")).length,
-    unidentified: persons.filter(p => p.status === "unidentified" || (p.type === "unidentified-body" && p.status !== "found")).length,
-  }), [persons])
 
   if (incidentLoading) {
     return (
@@ -143,10 +135,10 @@ export default function IncidentDetailContent() {
           <h2 className="text-lg font-bold">สถิติภายในเหตุการณ์</h2>
         </div>
         <StatsSummary
-          totalMissing={stats.missing}
-          totalFound={stats.found}
-          totalSafe={stats.safe}
-          totalUnidentified={stats.unidentified}
+          totalMissing={metrics?.totalMissing || 0}
+          totalFound={metrics?.totalFound || 0}
+          totalSafe={metrics?.totalSafe || 0}
+          totalUnidentified={metrics?.totalUnidentified || 0}
         />
       </section>
 

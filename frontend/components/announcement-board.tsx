@@ -11,7 +11,7 @@ import { SearchFilters } from "@/components/search-filters"
 import { PersonCard } from "@/components/person-card"
 import { PersonDetailModal } from "@/components/person-detail-modal"
 import { StatsSummary } from "@/components/stats-summary"
-import { fetchPersons } from "@/lib/api"
+import { fetchPersons, fetchDashboardMetrics } from "@/lib/api"
 import { useIncident } from "@/context/incident-context"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -43,6 +43,13 @@ export function AnnouncementBoard() {
   const { data: allPersons = [], isLoading, error, mutate } = useSWR(
     "all-persons",
     () => fetchPersons(),
+    { revalidateOnFocus: false }
+  )
+
+  // Unified stats from backend (Single Source of Truth)
+  const { data: metrics } = useSWR(
+    selectedIncidentId ? `metrics-${selectedIncidentId}` : "metrics-all",
+    () => fetchDashboardMetrics(selectedIncidentId || undefined),
     { revalidateOnFocus: false }
   )
 
@@ -133,27 +140,6 @@ export function AnnouncementBoard() {
       return true
     })
   }, [filters, allPersons, selectedIncidentId, incidents, activeTab])
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    // Use the filtered base (considering incident selection but not tab)
-    const basePersons = allPersons.filter((person) => {
-      const effectiveIncidentId = filters.incidentId !== "all" 
-        ? filters.incidentId 
-        : selectedIncidentId
-      if (effectiveIncidentId && person.incidentId !== effectiveIncidentId) {
-        return false
-      }
-      return true
-    })
-
-    return {
-      missing: basePersons.filter((p) => p.status === "missing" || p.status === "investigating" || p.status === "matching").length,
-      found: basePersons.filter((p) => p.status === "found" || p.status === "closed").length,
-      safe: basePersons.filter((p) => p.status === "safe" || (p.type === "survivor" && p.status !== "found")).length,
-      unidentified: basePersons.filter((p) => p.status === "unidentified" || (p.type === "unidentified-body" && p.status !== "found")).length,
-    }
-  }, [allPersons, filters.incidentId, selectedIncidentId])
 
   const handleViewDetails = (person: Person) => {
     router.push(`/cases/detail?id=${person.id}`)
@@ -252,10 +238,10 @@ export function AnnouncementBoard() {
             </div>
           ) : (
             <StatsSummary
-              totalMissing={stats.missing}
-              totalFound={stats.found}
-              totalSafe={stats.safe}
-              totalUnidentified={stats.unidentified}
+              totalMissing={metrics?.totalMissing || 0}
+              totalFound={metrics?.totalFound || 0}
+              totalSafe={metrics?.totalSafe || 0}
+              totalUnidentified={metrics?.totalUnidentified || 0}
             />
           )}
         </section>

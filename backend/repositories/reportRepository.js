@@ -8,7 +8,7 @@ export const createReport = async (reportData) => {
       is_unidentified, source, hospital_id, age_category, gender, life_status, first_name, last_name, age, report_type,
       latitude, longitude
     )
-    VALUES ($1, $2, $3, 'pending', $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+    VALUES ($1, $2, $3, 'REPORTED', $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
     RETURNING *
   `;
   const values = [
@@ -211,5 +211,30 @@ export const addCaseEvent = async (reportId, type, message, details = {}) => {
   const db = getDbConnection();
   const query = 'INSERT INTO case_events (report_id, event_type, message, details) VALUES ($1, $2, $3, $4) RETURNING *';
   const { rows } = await db.query(query, [reportId, type, message, JSON.stringify(details)]);
+  return rows[0];
+};
+
+export const getSystemStats = async (incidentId = null) => {
+  const db = getDbConnection();
+  let whereClause = 'WHERE deleted_at IS NULL';
+  const values = [];
+
+  if (incidentId && incidentId !== 'all') {
+    values.push(incidentId);
+    whereClause += ' AND incident_id = $1';
+  }
+
+  const query = `
+    SELECT 
+      COUNT(*) FILTER (WHERE status IN ('REPORTED', 'VERIFYING', 'ACTIVE', 'MATCHING')) as total_missing,
+      COUNT(*) FILTER (WHERE status IN ('VERIFIED', 'REUNITED', 'CLOSED')) as total_found,
+      COUNT(*) FILTER (WHERE status IN ('REPORTED', 'VERIFYING', 'ACTIVE', 'MATCHING') AND report_type = 'unidentified-victim') as total_safe,
+      COUNT(*) FILTER (WHERE status IN ('REPORTED', 'VERIFYING', 'ACTIVE', 'MATCHING') AND report_type = 'unidentified-deceased') as total_unidentified,
+      COUNT(*) FILTER (WHERE status NOT IN ('REUNITED', 'CLOSED')) as open_cases
+    FROM missing_reports
+    ${whereClause}
+  `;
+
+  const { rows } = await db.query(query, values);
   return rows[0];
 };

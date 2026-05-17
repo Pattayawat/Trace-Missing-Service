@@ -1,11 +1,10 @@
-import { SQSEvent } from 'aws-lambda';
 import * as reportService from '../services/reportService.js';
 import { hospitalClient } from '../utils/hospitalClient.js';
 
 /**
  * Validates if a string is a properly formatted URL.
  */
-function isValidUrl(url: string): boolean {
+function isValidUrl(url) {
   try {
     new URL(url);
     return true;
@@ -20,7 +19,7 @@ function isValidUrl(url: string): boolean {
  * missing person records in the Trace Missing Service.
  * Enriched with Hospital details via synchronous REST API call.
  */
-export const handler = async (event: SQSEvent): Promise<void> => {
+export const handler = async (event) => {
   for (const record of event.Records) {
     try {
       const rawMessage = JSON.parse(record.body);
@@ -92,7 +91,7 @@ Job: ${characteristics.job || 'N/A'}
       
       console.log(`Successfully processed patient event. Record ID: ${result.id}`);
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('CRITICAL: Failed to process patient event record', {
         error: error.message,
         recordId: record.messageId
