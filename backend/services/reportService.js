@@ -44,6 +44,12 @@ export const listReports = (filters) => reportRepo.getReports(filters);
 export const listIncidents = () => reportRepo.getIncidents();
 export const listReunifications = () => reportRepo.getReunifications();
 export const getReport = (id) => reportRepo.getReportById(id);
+export const getCaseDetail = (id) => reportRepo.getFullCaseDetail(id);
+export const updateReportStatus = async (id, status) => {
+  const updated = await reportRepo.updateReportStatus(id, status);
+  await reportRepo.addCaseEvent(id, 'STATUS_CHANGED', `Case status manually updated to ${status.toUpperCase()}`);
+  return updated;
+};
 
 export const processPersonMovement = async (data) => {
   // Try to find existing person by external identifier or citizen ID

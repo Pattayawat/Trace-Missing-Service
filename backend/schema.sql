@@ -1,11 +1,29 @@
 CREATE TABLE IF NOT EXISTS missing_reports (
   id SERIAL PRIMARY KEY,
   reporter_id VARCHAR(255),
-  incident_id INT,
+  incident_id VARCHAR(255),
   details TEXT,
   status VARCHAR(50) DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  deleted_at TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP,
+  photo_url TEXT,
+  location TEXT,
+  is_unidentified BOOLEAN DEFAULT FALSE,
+  source VARCHAR(255),
+  hospital_id VARCHAR(50),
+  age_category VARCHAR(50),
+  gender VARCHAR(10),
+  life_status VARCHAR(50),
+  first_name VARCHAR(255),
+  last_name VARCHAR(255),
+  age INTEGER,
+  report_type VARCHAR(50) DEFAULT 'missing-person',
+  citizen_id VARCHAR(20),
+  external_id VARCHAR(255),
+  last_updated_by VARCHAR(255),
+  latitude DOUBLE PRECISION,
+  longitude DOUBLE PRECISION
 );
 
 CREATE TABLE IF NOT EXISTS matching_results (
@@ -23,6 +41,17 @@ CREATE TABLE IF NOT EXISTS incidents (
   location VARCHAR(255),
   status VARCHAR(50),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS reunifications (
+    id SERIAL PRIMARY KEY,
+    report_id INTEGER REFERENCES missing_reports(id),
+    matched_report_id INTEGER REFERENCES missing_reports(id),
+    status VARCHAR(50) DEFAULT 'PENDING',
+    matched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    details JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_report_id UNIQUE (report_id)
 );
 
 -- Seed some incidents for demo

@@ -169,3 +169,47 @@ export const findPotentialUnidentifiedMatches = async (missingReport) => {
   const { rows } = await db.query(query, [missingReport.gender, missingReport.incident_id]);
   return rows;
 };
+
+export const updateReportStatus = async (id, status) => {
+  const db = getDbConnection();
+  const query = 'UPDATE missing_reports SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *';
+  const { rows } = await db.query(query, [status, id]);
+  return rows[0];
+};
+
+export const getFullCaseDetail = async (id) => {
+  const db = getDbConnection();
+  
+  // 1. Get main report
+  const personRes = await db.query('SELECT * FROM missing_reports WHERE id = $1', [id]);
+  const person = personRes.rows[0];
+  if (!person) return null;
+
+  // 2. Get matches (Reunifications)
+  const matchRes = await db.query(`
+    SELECT r.*, m.first_name, m.last_name, m.photo_url, m.details as match_details, m.location as match_location
+    FROM reunifications r
+    LEFT JOIN missing_reports m ON r.matched_report_id = m.id
+    WHERE r.report_id = $1 OR r.matched_report_id = $1
+  `, [id]);
+
+  // 3. Get timeline events
+  const eventsRes = await db.query('SELECT * FROM case_events WHERE report_id = $1 ORDER BY created_at DESC', [id]);
+
+  // 4. Get verification info
+  const verifyRes = await db.query('SELECT * FROM verification_records WHERE report_id = $1 ORDER BY created_at DESC LIMIT 1', [id]);
+
+  return {
+    person,
+    matches: matchRes.rows,
+    timeline: eventsRes.rows,
+    verification: verifyRes.rows[0]
+  };
+};
+
+export const addCaseEvent = async (reportId, type, message, details = {}) => {
+  const db = getDbConnection();
+  const query = 'INSERT INTO case_events (report_id, event_type, message, details) VALUES ($1, $2, $3, $4) RETURNING *';
+  const { rows } = await db.query(query, [reportId, type, message, JSON.stringify(details)]);
+  return rows[0];
+};

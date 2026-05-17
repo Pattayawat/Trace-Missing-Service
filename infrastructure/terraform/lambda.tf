@@ -15,6 +15,8 @@ locals {
     S3_BUCKET               = aws_s3_bucket.photos.id
     MATCHING_JOBS_QUEUE_URL = aws_sqs_queue.matching_jobs.url
     NOTIFICATION_QUEUE_URL  = aws_sqs_queue.notification.url
+    HOSPITAL_API_URL        = var.hospital_api_url
+    HOSPITAL_API_TOKEN      = var.hospital_api_token
   }
 }
 

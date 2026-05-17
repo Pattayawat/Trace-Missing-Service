@@ -16,22 +16,22 @@ export function StatusCharts({ locations, persons }: StatusChartsProps) {
   const statusData = [
     {
       name: "คนหาย",
-      value: persons.filter((p) => p.status === "missing").length,
+      value: persons.filter((p) => p.status === "missing" || p.status === "investigating" || p.status === "matching").length,
       fill: "var(--color-destructive)",
     },
     {
       name: "พบแล้ว",
-      value: persons.filter((p) => p.status === "found").length,
+      value: persons.filter((p) => p.status === "found" || p.status === "reunited" || p.status === "closed").length,
       fill: "var(--color-primary)",
     },
     {
       name: "ปลอดภัย",
-      value: persons.filter((p) => p.status === "safe").length,
+      value: persons.filter((p) => p.status === "safe" || (p.type === "survivor" && p.status !== "found")).length,
       fill: "var(--color-success)",
     },
     {
       name: "ไม่ทราบตัวตน",
-      value: persons.filter((p) => p.status === "unidentified").length,
+      value: persons.filter((p) => p.status === "unidentified" || (p.type === "unidentified-body" && p.status !== "found")).length,
       fill: "var(--color-muted-foreground)",
     },
   ]

@@ -6,6 +6,7 @@ import type {
   EmergencyContact,
   PotentialMatch,
   DashboardMetrics,
+  CaseDetail,
 } from "./types"
 import { 
   mockActivities, 
@@ -208,7 +209,7 @@ export async function fetchPersons(incidentId?: string, type?: Person["type"]): 
       return {
         id: r.id.toString(),
         type: personType,
-        status: r.status === 'pending' ? 'missing' : 'found',
+        status: r.status, // PASS REAL DATABASE STATUS
         name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : (r.details?.split(' - ')[0] || null),
         citizenId: r.citizen_id || null,
         caseId: `MP-2026-${r.id}`,
@@ -252,11 +253,11 @@ export async function fetchDashboardMetrics(incidentId?: string): Promise<Dashbo
   const persons = await fetchPersons(incidentId);
 
   return {
-    totalMissing: persons.filter((p) => p.type === "missing-person" && p.status === "missing").length,
-    totalFound: persons.filter((p) => p.status === "found").length,
-    totalSafe: persons.filter((p) => p.type === "survivor").length,
-    totalUnidentified: persons.filter((p) => p.type === "unidentified-body").length,
-    openCases: persons.filter((p) => p.status === "missing").length,
+    totalMissing: persons.filter((p) => p.type === "missing-person" && (p.status === "missing" || p.status === "investigating" || p.status === "matching")).length,
+    totalFound: persons.filter((p) => p.status === "found" || p.status === "reunited").length,
+    totalSafe: persons.filter((p) => p.type === "survivor" || p.status === "safe").length,
+    totalUnidentified: persons.filter((p) => p.type === "unidentified-body" || p.status === "unidentified").length,
+    openCases: persons.filter((p) => p.status === "missing" || p.status === "investigating" || p.status === "matching").length,
   }
 }
 
@@ -325,7 +326,7 @@ export async function fetchPotentialMatches(): Promise<PotentialMatch[]> {
       const missingPerson: Person = {
         id: r.report_id.toString(),
         type: "missing-person",
-        status: r.person_status === 'pending' ? 'missing' : 'found',
+        status: r.person_status, // PASS REAL STATUS
         name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : (r.report_details?.split(' - ')[0] || "Unknown"),
         citizenId: r.citizen_id || null,
         caseId: `MP-2026-${r.report_id}`,
@@ -351,7 +352,7 @@ export async function fetchPotentialMatches(): Promise<PotentialMatch[]> {
         matchedPerson = {
           id: r.matched_report_id.toString(),
           type: matchedType,
-          status: r.matched_person_status === 'pending' ? 'missing' : 'found',
+          status: r.matched_person_status, // PASS REAL STATUS
           name: r.matched_first_name && r.matched_last_name ? `${r.matched_first_name} ${r.matched_last_name}` : (r.matched_details?.split(' - ')[0] || "บุคคลไม่ทราบตัวตน"),
           citizenId: null,
           caseId: `MP-2026-${r.matched_report_id}`,
@@ -404,6 +405,65 @@ export async function fetchPotentialMatches(): Promise<PotentialMatch[]> {
   } catch (e) {
     console.error("Failed to fetch reunifications:", e);
     return [];
+  }
+}
+
+// Update person status
+export async function updatePersonStatus(id: string, status: string): Promise<boolean> {
+  if (!API_URL) return true;
+
+  try {
+    const response = await fetch(`${API_URL}/reports/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+
+    return response.ok;
+  } catch (e) {
+    console.error("Failed to update status", e);
+    return false;
+  }
+}
+
+// Fetch full case detail with timeline and matches
+export async function fetchCaseDetail(id: string): Promise<CaseDetail | null> {
+  if (!API_URL) return null;
+
+  try {
+    const response = await fetch(`${API_URL}/reports/${id}/detail`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    
+    // Map person in detail
+    const r = data.person;
+    let personType: Person["type"] = "missing-person";
+    if (r.report_type === "unidentified-victim") personType = "survivor";
+    if (r.report_type === "unidentified-deceased") personType = "unidentified-body";
+
+    data.person = {
+      id: r.id.toString(),
+      type: personType,
+      status: r.status,
+      name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : (r.details?.split(' - ')[0] || null),
+      citizenId: r.citizen_id || null,
+      caseId: `MP-2026-${r.id}`,
+      ageGroup: r.age_category || "adult",
+      age: r.age,
+      gender: r.gender || "unknown",
+      location: r.location || "Unknown",
+      lastSeenDate: r.created_at,
+      photoUrl: r.photo_url || null,
+      description: r.details?.split(' - ')[1] || r.details || "",
+      incidentId: r.incident_id,
+      latitude: r.latitude,
+      longitude: r.longitude,
+    };
+
+    return data as CaseDetail;
+  } catch (e) {
+    console.error("Failed to fetch case detail", e);
+    return null;
   }
 }
 

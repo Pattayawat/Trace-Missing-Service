@@ -46,6 +46,40 @@ export const handler = async (event) => {
       };
     }
 
+    if (routeKey === 'PATCH /reports/{id}/status') {
+      const { id } = pathParameters;
+      const { status } = JSON.parse(body);
+      
+      const validStatuses = ['missing', 'found', 'safe', 'unidentified', 'closed', 'investigating', 'matching'];
+      if (!validStatuses.includes(status.toLowerCase())) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ message: 'Invalid status' }),
+        };
+      }
+
+      const updated = await reportService.updateReportStatus(id, status.toLowerCase());
+      return {
+        statusCode: 200,
+        body: JSON.stringify(updated),
+      };
+    }
+
+    if (routeKey === 'GET /reports/{id}/detail') {
+      const { id } = pathParameters;
+      const detail = await reportService.getCaseDetail(id);
+      if (!detail) {
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ message: 'Case not found' }),
+        };
+      }
+      return {
+        statusCode: 200,
+        body: JSON.stringify(detail),
+      };
+    }
+
     if (routeKey === 'POST /reports/upload-url') {
       const { fileName, contentType } = JSON.parse(body);
       const key = `uploads/${userId}/${Date.now()}-${fileName}`;

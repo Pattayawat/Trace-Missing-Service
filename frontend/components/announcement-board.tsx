@@ -14,6 +14,7 @@ import { StatsSummary } from "@/components/stats-summary"
 import { fetchPersons } from "@/lib/api"
 import { useIncident } from "@/context/incident-context"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type { Person, FilterState } from "@/lib/types"
 
 export function AnnouncementBoard() {
@@ -27,7 +28,7 @@ export function AnnouncementBoard() {
     incidentType: "all",
     province: "all",
   })
-  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null)
+  const router = useRouter()
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [activeTab, setActiveTab] = useState<string>("all")
 
@@ -147,15 +148,15 @@ export function AnnouncementBoard() {
     })
 
     return {
-      missing: basePersons.filter((p) => p.status === "missing").length,
-      found: basePersons.filter((p) => p.status === "found").length,
-      safe: basePersons.filter((p) => p.status === "safe").length,
-      unidentified: basePersons.filter((p) => p.status === "unidentified").length,
+      missing: basePersons.filter((p) => p.status === "missing" || p.status === "investigating" || p.status === "matching").length,
+      found: basePersons.filter((p) => p.status === "found" || p.status === "closed").length,
+      safe: basePersons.filter((p) => p.status === "safe" || (p.type === "survivor" && p.status !== "found")).length,
+      unidentified: basePersons.filter((p) => p.status === "unidentified" || (p.type === "unidentified-body" && p.status !== "found")).length,
     }
   }, [allPersons, filters.incidentId, selectedIncidentId])
 
   const handleViewDetails = (person: Person) => {
-    setSelectedPerson(person)
+    router.push(`/cases/detail?id=${person.id}`)
   }
 
   const handleContact = (person: Person) => {
@@ -397,12 +398,6 @@ export function AnnouncementBoard() {
           )}
         </section>
       </main>
-
-      {/* Detail Modal */}
-      <PersonDetailModal
-        person={selectedPerson}
-        onClose={() => setSelectedPerson(null)}
-      />
     </div>
   )
 }

@@ -32,7 +32,6 @@ export default function IncidentDetailContent() {
   const params = useParams()
   const router = useRouter()
   const incidentId = params.id as string
-  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null)
 
   const { data: incident, error: incidentError, isLoading: incidentLoading } = useSWR(
     `incident-${incidentId}`,
@@ -50,10 +49,10 @@ export default function IncidentDetailContent() {
   )
 
   const stats = useMemo(() => ({
-    missing: persons.filter(p => p.status === "missing").length,
-    found: persons.filter(p => p.status === "found").length,
-    safe: persons.filter(p => p.status === "safe").length,
-    unidentified: persons.filter(p => p.status === "unidentified").length,
+    missing: persons.filter(p => p.status === "missing" || p.status === "investigating" || p.status === "matching").length,
+    found: persons.filter(p => p.status === "found" || p.status === "closed").length,
+    safe: persons.filter(p => p.status === "safe" || (p.type === "survivor" && p.status !== "found")).length,
+    unidentified: persons.filter(p => p.status === "unidentified" || (p.type === "unidentified-body" && p.status !== "found")).length,
   }), [persons])
 
   if (incidentLoading) {
@@ -172,7 +171,7 @@ export default function IncidentDetailContent() {
                 <PersonCard 
                   key={p.id} 
                   person={p} 
-                  onViewDetails={setSelectedPerson} 
+                  onViewDetails={(p) => router.push(`/cases/detail?id=${p.id}`)} 
                   onContact={(p) => p.contactPhone && (window.location.href = `tel:${p.contactPhone}`)} 
                 />
               ))}
@@ -182,7 +181,7 @@ export default function IncidentDetailContent() {
           <TabsContent value="missing" className="mt-0">
              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {persons.filter(p => p.type === "missing-person").map(p => (
-                <PersonCard key={p.id} person={p} onViewDetails={setSelectedPerson} />
+                <PersonCard key={p.id} person={p} onViewDetails={(p) => router.push(`/cases/detail?id=${p.id}`)} />
               ))}
             </div>
           </TabsContent>
@@ -190,7 +189,7 @@ export default function IncidentDetailContent() {
           <TabsContent value="survivor" className="mt-0">
              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {persons.filter(p => p.type === "survivor").map(p => (
-                <PersonCard key={p.id} person={p} onViewDetails={setSelectedPerson} />
+                <PersonCard key={p.id} person={p} onViewDetails={(p) => router.push(`/cases/detail?id=${p.id}`)} />
               ))}
             </div>
           </TabsContent>
@@ -198,14 +197,12 @@ export default function IncidentDetailContent() {
           <TabsContent value="deceased" className="mt-0">
              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {persons.filter(p => p.type === "unidentified-body").map(p => (
-                <PersonCard key={p.id} person={p} onViewDetails={setSelectedPerson} />
+                <PersonCard key={p.id} person={p} onViewDetails={(p) => router.push(`/cases/detail?id=${p.id}`)} />
               ))}
             </div>
           </TabsContent>
         </Tabs>
       </section>
-
-      <PersonDetailModal person={selectedPerson} onClose={() => setSelectedPerson(null)} />
     </div>
   )
 }

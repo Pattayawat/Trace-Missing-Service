@@ -1,3 +1,15 @@
+variable "hospital_api_url" {
+  description = "Base URL for the Hospital Service API"
+  type        = string
+  default     = "https://xvvwesom7h.execute-api.us-east-1.amazonaws.com"
+}
+
+variable "hospital_api_token" {
+  description = "Bearer token for Hospital Service API"
+  type        = string
+  sensitive   = true
+}
+
 variable "aws_region" {
   description = "AWS Region"
   type        = string

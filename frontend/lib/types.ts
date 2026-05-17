@@ -14,7 +14,7 @@ export interface Incident {
 }
 
 // Person types - managed by this service
-export type PersonStatus = "missing" | "found" | "unidentified" | "safe"
+export type PersonStatus = "missing" | "found" | "unidentified" | "safe" | "investigating" | "matching" | "closed" | "reunited"
 export type PersonType = "missing-person" | "unidentified-body" | "survivor"
 
 export interface Person {
@@ -70,6 +70,22 @@ export interface ActivityItem {
   timestamp: Date
   caseId?: string
   incidentId?: string
+}
+
+export interface CaseEvent {
+  id: number
+  report_id: number
+  event_type: string
+  message: string
+  details: any
+  created_at: string
+}
+
+export interface CaseDetail {
+  person: Person
+  matches: any[]
+  timeline: CaseEvent[]
+  verification: any
 }
 
 export interface LocationData {

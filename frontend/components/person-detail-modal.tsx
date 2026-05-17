@@ -9,10 +9,21 @@ import {
   Share2,
   Printer,
   AlertTriangle,
+  RefreshCw,
+  ChevronDown,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Person } from "@/lib/types"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
+import { updatePersonStatus } from "@/lib/api"
+import { useSWRConfig } from "swr"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface PersonDetailModalProps {
   person: Person | null
@@ -22,6 +33,8 @@ interface PersonDetailModalProps {
 export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const { mutate } = useSWRConfig()
+  const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
     if (person) {
@@ -43,35 +56,59 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
 
   if (!person) return null
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (!person) return
+    setIsUpdating(true)
+    const success = await updatePersonStatus(person.id, newStatus)
+    if (success) {
+      // Invalidate all relevant data across the whole app to ensure all dashboards/boards update
+      mutate((key: any) => 
+        typeof key === 'string' && 
+        (key.includes('persons') || key.includes('metrics') || key.includes('activities') || key.includes('reunification'))
+      )
+      
+      // Close modal after successful update
+      onClose()
+    }
+    setIsUpdating(false)
+  }
+
   const displayName =
     person.name ||
     `${person.gender === "male" ? "ผู้ชาย" : person.gender === "female" ? "ผู้หญิง" : "บุคคล"}ไม่ทราบตัวตน`
 
-  const statusConfig = {
+  const statusConfig: Record<string, { label: string, className: string }> = {
     missing: {
       label: "คนหาย",
       className: "bg-destructive text-destructive-foreground",
-      icon: AlertTriangle,
     },
     found: {
       label: "พบแล้ว",
       className: "bg-primary text-primary-foreground",
-      icon: null,
     },
     safe: {
       label: "ปลอดภัย",
       className: "bg-success text-success-foreground",
-      icon: null,
     },
     unidentified: {
       label: "ไม่ทราบตัวตน",
       className: "bg-muted text-muted-foreground",
-      icon: null,
     },
+    investigating: {
+      label: "กำลังตรวจสอบ",
+      className: "bg-warning text-warning-foreground",
+    },
+    matching: {
+      label: "กำลังจับคู่",
+      className: "bg-info text-info-foreground",
+    },
+    closed: {
+      label: "ปิดเคสแล้ว",
+      className: "bg-slate-600 text-white",
+    }
   }
 
-  const { label: statusLabel, className: statusClass } =
-    statusConfig[person.status]
+  const currentStatus = statusConfig[person.status] || { label: person.status, className: "bg-muted text-muted-foreground" }
 
   return (
     <div
@@ -130,12 +167,25 @@ export function PersonDetailModal({ person, onClose }: PersonDetailModalProps) {
                     <User className="h-20 w-20 text-muted-foreground/40" />
                   </div>
                 )}
-                <div className="absolute bottom-2 left-2">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${statusClass}`}
-                  >
-                    {statusLabel}
-                  </span>
+                <div className="absolute bottom-2 left-2 flex flex-col gap-2">
+                  <Select onValueChange={handleStatusChange} disabled={isUpdating}>
+                    <SelectTrigger className={`h-8 w-auto min-w-[100px] border-0 text-xs font-bold uppercase shadow-lg ring-1 ring-white/20 ${currentStatus.className}`}>
+                      <SelectValue placeholder={currentStatus.label} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="missing">คนหาย (Missing)</SelectItem>
+                      <SelectItem value="found">พบแล้ว (Found)</SelectItem>
+                      <SelectItem value="safe">ปลอดภัย (Safe)</SelectItem>
+                      <SelectItem value="investigating">กำลังตรวจสอบ (Investigating)</SelectItem>
+                      <SelectItem value="matching">กำลังจับคู่ (Matching)</SelectItem>
+                      <SelectItem value="closed">ปิดเคสแล้ว (Closed)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {isUpdating && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full">
+                      <RefreshCw className="h-4 w-4 animate-spin text-white" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

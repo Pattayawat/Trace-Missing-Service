@@ -16,7 +16,7 @@ interface PersonCardProps {
 }
 
 function StatusBadge({ status }: { status: Person["status"] }) {
-  const config = {
+  const config: Record<string, { label: string, className: string }> = {
     missing: {
       label: "คนหาย",
       className: "bg-destructive text-destructive-foreground",
@@ -33,9 +33,22 @@ function StatusBadge({ status }: { status: Person["status"] }) {
       label: "ไม่ทราบตัวตน",
       className: "bg-muted text-muted-foreground",
     },
+    investigating: {
+      label: "กำลังตรวจสอบ",
+      className: "bg-warning text-warning-foreground",
+    },
+    matching: {
+      label: "กำลังจับคู่",
+      className: "bg-info text-info-foreground",
+    },
+    closed: {
+      label: "ปิดเคสแล้ว",
+      className: "bg-slate-600 text-white",
+    },
   }
 
-  const { label, className } = config[status]
+  const current = config[status] || { label: status, className: "bg-muted text-muted-foreground" }
+  const { label, className } = current
 
   return (
     <span

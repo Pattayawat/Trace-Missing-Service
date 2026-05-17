@@ -108,11 +108,11 @@ export function UnidentifiedSurvivorForm() {
         incidentId: formData.incidentId,
       })
 
-      // Refresh global data
-      mutate("all-persons")
-      mutate("metrics-all")
-      mutate((key: any) => typeof key === 'string' && key.startsWith('persons-'))
-      mutate((key: any) => typeof key === 'string' && key.startsWith('metrics-'))
+      // Refresh all relevant global data using key matcher
+      mutate((key: any) => 
+        typeof key === 'string' && 
+        (key.includes('persons') || key.includes('metrics') || key.includes('activities') || key.includes('reunification'))
+      )
 
       setIsSubmitting(false)
       setIsSubmitted(true)
