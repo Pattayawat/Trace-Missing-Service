@@ -7,31 +7,29 @@ variable "aws_region" {
 variable "env" {
   description = "Environment name"
   type        = string
-  default     = "dev"
+  default     = "demo"
 }
 
-variable "cognito_client_id" {
-  description = "Cognito User Pool Client ID for API Gateway Authorizer"
+variable "project_name" {
+  description = "The name of the project"
   type        = string
-}
-
-variable "user_pool_id" {
-  description = "Cognito User Pool ID"
-  type        = string
+  default     = "trace-missing"
 }
 
 variable "db_username" {
-  description = "Master username for Aurora PostgreSQL"
+  description = "Master username for PostgreSQL"
   type        = string
   default     = "dbadmin"
 }
 
-variable "vpc_id" {
-  description = "VPC ID where resources will be deployed"
+variable "db_password" {
+  description = "Master password for PostgreSQL"
   type        = string
+  sensitive   = true
 }
 
-variable "private_subnet_ids" {
-  description = "List of private subnet IDs"
-  type        = list(string)
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
 }

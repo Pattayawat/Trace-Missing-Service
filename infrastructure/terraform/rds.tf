@@ -1,48 +1,57 @@
-resource "aws_rds_cluster" "postgres" {
-  cluster_identifier          = "trace-missing-cluster-${var.env}"
-  engine                      = "aurora-postgresql"
-  engine_version              = "15.4"
-  database_name               = "trace_missing"
-  master_username             = var.db_username
-  manage_master_user_password = true
-  
-  availability_zones          = ["${var.aws_region}a", "${var.aws_region}b"]
-  
-  backup_retention_period     = 7
-  deletion_protection         = true
-  
-  enabled_cloudwatch_logs_exports = ["postgresql"]
-}
+resource "aws_db_subnet_group" "main" {
+  name       = "${var.project_name}-db-subnet-group-${var.env}"
+  subnet_ids = aws_subnet.public[*].id
 
-resource "aws_rds_cluster_instance" "writer" {
-  identifier         = "trace-missing-writer-${var.env}"
-  cluster_identifier = aws_rds_cluster.postgres.id
-  instance_class     = "db.r6g.large"
-  engine             = aws_rds_cluster.postgres.engine
-  engine_version     = aws_rds_cluster.postgres.engine_version
-}
-
-resource "aws_rds_cluster_instance" "reader" {
-  count              = 2
-  identifier         = "trace-missing-reader-${count.index}-${var.env}"
-  cluster_identifier = aws_rds_cluster.postgres.id
-  instance_class     = "db.r6g.large"
-  engine             = aws_rds_cluster.postgres.engine
-  engine_version     = aws_rds_cluster.postgres.engine_version
-}
-
-resource "aws_db_proxy" "main" {
-  name                   = "trace-missing-proxy-${var.env}"
-  debug_logging          = false
-  engine_family          = "POSTGRESQL"
-  idle_client_timeout    = 1800
-  require_tls            = true
-  role_arn               = aws_iam_role.rds_proxy_role.arn
-  vpc_subnet_ids         = var.private_subnet_ids
-  
-  auth {
-    auth_scheme = "SECRETS"
-    secret_arn  = aws_rds_cluster.postgres.master_user_secret[0].secret_arn
-    iam_auth    = "REQUIRED"
+  tags = {
+    Name = "${var.project_name}-db-subnet-group-${var.env}"
   }
+}
+
+resource "aws_security_group" "rds_sg" {
+  name        = "${var.project_name}-rds-sg-${var.env}"
+  description = "Allow inbound traffic for PostgreSQL"
+  vpc_id      = aws_vpc.main.id
+
+  # In a demo, we can allow access from Lambda (anywhere if Lambda is outside VPC) 
+  # or restrict to VPC CIDR if Lambda is inside.
+  # To avoid NAT Gateway, we keep RDS public and restrict to specific IPs if possible,
+  # but for a generic demo, we allow 0.0.0.0/0 for convenience OR restricted SG.
+  
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Restricted for security, but okay for demo public RDS
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_db_instance" "postgres" {
+  identifier           = "${var.project_name}-db-${var.env}"
+  allocated_storage    = 20
+  storage_type         = "gp2"
+  engine               = "postgres"
+  engine_version       = "15"
+  instance_class       = "db.t3.micro"
+  db_name              = "trace_missing"
+  username             = var.db_username
+  password             = var.db_password
+  db_subnet_group_name = aws_db_subnet_group.main.name
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  publicly_accessible  = true
+  skip_final_snapshot  = true
+
+  tags = {
+    Name = "${var.project_name}-db-${var.env}"
+  }
+}
+
+output "db_endpoint" {
+  value = aws_db_instance.postgres.endpoint
 }

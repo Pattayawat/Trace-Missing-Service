@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+build/
+dist/
+out/
+.next/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.tfvars
+*.tfvars.json
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.crash.log
+override.tf
+override.tf.json
+*_override.tf
+*.overide.tf.json
+.terraformrc
+terraform.rc
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Misc
+.vercel
+.turbo
+*.log
+*.zip
+infrastructure/terraform/lambda.zip
+infrastructure/terraform/dummy.zip

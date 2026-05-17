@@ -1,38 +1,28 @@
 resource "aws_s3_bucket" "photos" {
-  bucket = "trace-missing-photos-${var.env}"
+  bucket = "${var.project_name}-photos-${var.env}-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
 }
 
-resource "aws_s3_bucket_lifecycle_configuration" "photos" {
+resource "aws_s3_bucket_public_access_block" "photos" {
   bucket = aws_s3_bucket.photos.id
-  
-  rule {
-    id     = "move-to-ia"
-    status = "Enabled"
-    transition {
-      days          = 90
-      storage_class = "STANDARD_IA"
-    }
-  }
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_cors_configuration" "photos_cors" {
+resource "aws_s3_bucket_cors_configuration" "photos" {
   bucket = aws_s3_bucket.photos.id
 
   cors_rule {
     allowed_headers = ["*"]
-    allowed_methods = ["PUT", "GET"]
-    allowed_origins = ["https://trace-missing.app"]
-    expose_headers  = []
+    allowed_methods = ["PUT", "POST", "GET"]
+    allowed_origins = ["*"] # Adjust for demo if needed
     max_age_seconds = 3000
   }
 }
 
-# Notification to SQS for Face Recognition Worker
-resource "aws_s3_bucket_notification" "bucket_notification" {
-  bucket = aws_s3_bucket.photos.id
-
-  queue {
-    queue_arn     = aws_sqs_queue.face_recognition.arn
-    events        = ["s3:ObjectCreated:Put"]
-  }
+output "s3_bucket_name" {
+  value = aws_s3_bucket.photos.id
 }
