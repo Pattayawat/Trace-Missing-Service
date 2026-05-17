@@ -8,7 +8,6 @@ import type {
   DashboardMetrics,
 } from "./types"
 import { 
-  mockLocationData, 
   mockActivities, 
   mockPotentialMatches, 
   emergencyContacts 
@@ -211,7 +210,7 @@ export async function fetchPersons(incidentId?: string, type?: Person["type"]): 
         type: personType,
         status: r.status === 'pending' ? 'missing' : 'found',
         name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : (r.details?.split(' - ')[0] || null),
-        citizenId: null,
+        citizenId: r.citizen_id || null,
         caseId: `MP-2026-${r.id}`,
         ageGroup: r.age_category || "adult",
         age: r.age,
@@ -230,11 +229,20 @@ export async function fetchPersons(incidentId?: string, type?: Person["type"]): 
 
 // Fetch activities (optionally filtered by incident)
 export async function fetchActivities(incidentId?: string): Promise<ActivityItem[]> {
-  await delay(300)
-  if (incidentId) {
-    return mockActivities.filter((a: ActivityItem) => a.incidentId === incidentId)
-  }
-  return mockActivities
+  const persons = await fetchPersons(incidentId);
+  
+  // Create real activities from person reports
+  const activities: ActivityItem[] = persons.slice(0, 10).map((p) => ({
+    id: `act-${p.id}`,
+    type: p.status === 'found' ? 'status_update' : 'new_report',
+    message: p.status === 'found' ? `พบตัว ${p.name || 'บุคคลนิรนาม'} แล้ว` : `รับแจ้งเหตุ ${p.type === 'missing-person' ? 'คนหาย' : 'บุคคลนิรนาม'} ใหม่: ${p.name || 'ไม่ทราบชื่อ'}`,
+    location: p.location,
+    timestamp: new Date(p.lastSeenDate),
+    caseId: p.caseId,
+    incidentId: p.incidentId
+  }));
+
+  return activities.length > 0 ? activities : mockActivities;
 }
 
 // Fetch dashboard metrics
@@ -242,7 +250,7 @@ export async function fetchDashboardMetrics(incidentId?: string): Promise<Dashbo
   const persons = await fetchPersons(incidentId);
 
   return {
-    totalMissing: persons.filter((p) => p.type === "missing-person").length,
+    totalMissing: persons.filter((p) => p.type === "missing-person" && p.status === "missing").length,
     totalFound: persons.filter((p) => p.status === "found").length,
     totalSafe: persons.filter((p) => p.type === "survivor").length,
     totalUnidentified: persons.filter((p) => p.type === "unidentified-body").length,
@@ -258,6 +266,94 @@ export async function fetchIncidentCaseCounts(): Promise<Record<string, number>>
     counts[p.incidentId] = (counts[p.incidentId] || 0) + 1
   })
   return counts
+}
+
+// Generate location data for the map based on real reports
+export async function fetchLocationData(): Promise<LocationData[]> {
+  const persons = await fetchPersons();
+  const locationMap: Record<string, LocationData> = {};
+
+  // Hardcoded coordinates for some demo locations
+  const coordinates: Record<string, {lat: number, lng: number}> = {
+    "กรุงเทพฯ": { lat: 13.7563, lng: 100.5018 },
+    "เชียงใหม่": { lat: 18.7883, lng: 98.9853 },
+    "สงขลา": { lat: 7.1898, lng: 100.5954 },
+    "Bangkok": { lat: 13.7563, lng: 100.5018 },
+    "Chiang Mai": { lat: 18.7883, lng: 98.9853 },
+    "สามย่าน": { lat: 13.7334, lng: 100.5284 },
+    "EggHead": { lat: 14.0649, lng: 100.6003 }, // TU Dome area
+  };
+
+  persons.forEach((p) => {
+    const locName = p.location.split(',')[0].trim();
+    if (!locationMap[locName]) {
+      const coords = coordinates[locName] || { lat: 13.7563 + (Math.random() - 0.5), lng: 100.5018 + (Math.random() - 0.5) };
+      locationMap[locName] = {
+        name: locName,
+        missing: 0,
+        found: 0,
+        unidentified: 0,
+        ...coords
+      };
+    }
+
+    if (p.status === 'missing') locationMap[locName].missing++;
+    if (p.status === 'found') locationMap[locName].found++;
+    if (p.type === 'unidentified-body') locationMap[locName].unidentified++;
+  });
+
+  return Object.values(locationMap);
+}
+
+// Fetch potential matches for reunification
+export async function fetchPotentialMatches(): Promise<PotentialMatch[]> {
+  if (!API_URL) return mockPotentialMatches;
+
+  try {
+    const response = await fetch(`${API_URL}/reunifications`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    
+    return data.map((r: any) => ({
+      id: r.id.toString(),
+      missingPerson: {
+        id: r.report_id.toString(),
+        name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : "Unknown",
+        ageGroup: r.age_category || "ADULT",
+        gender: r.gender || "unknown",
+        photoUrl: r.photo_url || null,
+        lastSeenLocation: r.current_location,
+        lastSeenDate: r.matched_at,
+        incidentId: r.incident_id,
+        description: r.report_details
+      },
+      matchedPerson: {
+        id: `matched-${r.id}`,
+        name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : "Unidentified",
+        ageGroup: r.age_category || "ADULT",
+        gender: r.gender || "unknown",
+        photoUrl: r.photo_url || null,
+        currentLocation: r.current_location,
+        foundDate: r.matched_at,
+        incidentId: r.incident_id,
+        description: `Matched via: ${r.details?.matchedVia || 'System'}`
+      },
+      confidence: 0.95,
+      status: r.status as any,
+      matchDate: r.matched_at,
+      locationHistory: [
+        {
+          location: r.current_location,
+          timestamp: r.matched_at,
+          type: r.details?.shelterId ? "shelter" : "hospital",
+          description: r.details?.shelterId ? `Checked in at shelter ${r.details.shelterId}` : "Transferred to hospital"
+        }
+      ]
+    }));
+  } catch (e) {
+    console.error("Failed to fetch reunifications:", e);
+    return [];
+  }
 }
 
 // Get unique provinces from incidents
@@ -289,4 +385,4 @@ export function getIncidentStatusLabel(status: string): string {
 }
 
 // Re-export mock data that is used directly
-export { mockLocationData, mockActivities, mockPotentialMatches, emergencyContacts }
+export { mockActivities, mockPotentialMatches, emergencyContacts }

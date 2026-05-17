@@ -38,6 +38,14 @@ export const handler = async (event) => {
       };
     }
 
+    if (routeKey === 'GET /reunifications') {
+      const reunifications = await reportService.listReunifications();
+      return {
+        statusCode: 200,
+        body: JSON.stringify(reunifications),
+      };
+    }
+
     if (routeKey === 'POST /reports/upload-url') {
       const { fileName, contentType } = JSON.parse(body);
       const key = `uploads/${userId}/${Date.now()}-${fileName}`;

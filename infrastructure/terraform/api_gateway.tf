@@ -25,7 +25,7 @@ resource "aws_apigatewayv2_integration" "report_handler" {
 }
 
 resource "aws_apigatewayv2_route" "report_routes" {
-  for_each = toset(["POST /reports", "GET /reports", "GET /reports/{id}", "PATCH /reports/{id}", "GET /incidents", "POST /reports/upload-url"])
+  for_each = toset(["POST /reports", "GET /reports", "GET /reports/{id}", "PATCH /reports/{id}", "GET /incidents", "POST /reports/upload-url", "GET /reunifications"])
   api_id    = aws_apigatewayv2_api.main.id
   route_key = each.key
   target    = "integrations/${aws_apigatewayv2_integration.report_handler.id}"

@@ -32,9 +32,9 @@ import {
   fetchPersons,
   fetchActivities,
   fetchDashboardMetrics,
+  fetchLocationData,
   getIncidentTypeLabel,
 } from "@/lib/api"
-import { mockLocationData } from "@/lib/api"
 import { useIncident } from "@/context/incident-context"
 import { cn } from "@/lib/utils"
 import type { IncidentType } from "@/lib/types"
@@ -103,9 +103,19 @@ export function ExecutiveDashboard() {
     { revalidateOnFocus: false }
   )
 
+  const {
+    data: locationData = [],
+    isLoading: locationsLoading,
+    mutate: refreshLocations,
+  } = useSWR(
+    "dashboard-locations",
+    () => fetchLocationData(),
+    { revalidateOnFocus: false }
+  )
+
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    await Promise.all([refreshPersons(), refreshActivities(), refreshMetrics()])
+    await Promise.all([refreshPersons(), refreshActivities(), refreshMetrics(), refreshLocations()])
     setLastUpdated(new Date())
     setIsRefreshing(false)
   }
@@ -113,12 +123,12 @@ export function ExecutiveDashboard() {
   // Auto-refresh every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setLastUpdated(new Date())
+      handleRefresh()
     }, 30000)
     return () => clearInterval(interval)
   }, [])
 
-  const isLoading = personsLoading || activitiesLoading || metricsLoading
+  const isLoading = personsLoading || activitiesLoading || metricsLoading || locationsLoading
 
   return (
     <div className="min-h-screen bg-background">
@@ -357,7 +367,7 @@ export function ExecutiveDashboard() {
           <div className="grid gap-4 lg:grid-cols-5">
             {/* Map - Takes 3 columns */}
             <div className="lg:col-span-3">
-              <IncidentMap locations={mockLocationData} />
+              <IncidentMap locations={locationData} />
             </div>
             {/* Activity Feed - Takes 2 columns */}
             <div className="lg:col-span-2">
@@ -401,7 +411,7 @@ export function ExecutiveDashboard() {
               </Card>
             </div>
           ) : (
-            <StatusCharts locations={mockLocationData} persons={persons} />
+            <StatusCharts locations={locationData} persons={persons} />
           )}
         </section>
       </main>

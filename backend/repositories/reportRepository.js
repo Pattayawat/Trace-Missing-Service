@@ -58,8 +58,74 @@ export const getIncidents = async () => {
   return rows;
 };
 
+export const findReportByExternalId = async (externalId, source) => {
+  const db = getDbConnection();
+  const { rows } = await db.query(
+    'SELECT * FROM missing_reports WHERE external_id = $1 AND source = $2 AND deleted_at IS NULL',
+    [externalId, source]
+  );
+  return rows[0];
+};
+
+export const findReportByCitizenId = async (citizenId) => {
+  const db = getDbConnection();
+  const { rows } = await db.query(
+    'SELECT * FROM missing_reports WHERE citizen_id = $1 AND deleted_at IS NULL',
+    [citizenId]
+  );
+  return rows[0];
+};
+
+export const findReportByNames = async (firstName, lastName) => {
+  const db = getDbConnection();
+  const { rows } = await db.query(
+    'SELECT * FROM missing_reports WHERE first_name ILIKE $1 AND last_name ILIKE $2 AND deleted_at IS NULL',
+    [firstName, lastName]
+  );
+  return rows[0];
+};
+
+export const updateReportLocation = async (id, locationData) => {
+  const db = getDbConnection();
+  const query = `
+    UPDATE missing_reports 
+    SET location = $1, last_updated_by = $2, life_status = COALESCE($3, life_status)
+    WHERE id = $4
+    RETURNING *
+  `;
+  const { rows } = await db.query(query, [locationData.location, locationData.source, locationData.lifeStatus, id]);
+  return rows[0];
+};
+
+export const createReunification = async (reunificationData) => {
+  const db = getDbConnection();
+  const query = `
+    INSERT INTO reunifications (report_id, status, details)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (report_id) DO UPDATE SET status = $2, details = $3, matched_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `;
+  const { rows } = await db.query(query, [reunificationData.reportId, reunificationData.status, reunificationData.details]);
+  return rows[0];
+};
+
 export const getReportById = async (id) => {
   const db = getDbConnection();
   const { rows } = await db.query('SELECT * FROM missing_reports WHERE id = $1', [id]);
   return rows[0];
+};
+
+export const getReunifications = async () => {
+  const db = getDbConnection();
+  const query = `
+    SELECT 
+      r.*,
+      m.first_name, m.last_name, m.details as report_details, m.location as current_location,
+      m.photo_url, m.incident_id, m.status as person_status, m.report_type
+    FROM reunifications r
+    JOIN missing_reports m ON r.report_id = m.id
+    ORDER BY r.matched_at DESC
+  `;
+  const { rows } = await db.query(query);
+  return rows;
 };

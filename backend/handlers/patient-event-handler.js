@@ -46,7 +46,8 @@ export const handler = async (event) => {
       
       const reportData = {
         userId: 'system-prearrival-service',
-        incidentId: null, // External reports start unlinked to local incidents
+        externalId: body.message_id || body.MessageId, // Deduplication key
+        incidentId: null,
         details: `
 Physical Desc: ${characteristics.physical_desc || 'N/A'}
 Remark: ${characteristics.physical_remark || 'N/A'}
@@ -66,10 +67,10 @@ Job: ${characteristics.job || 'N/A'}
         reportType: reportType
       };
 
-      // 3. Persist Record
-      const createdReport = await reportService.createReport(reportData);
+      // 3. Persist Record (with Deduplication)
+      const result = await reportService.processPersonMovement(reportData);
       
-      console.log(`Successfully created unidentified person record. ID: ${createdReport.id}`);
+      console.log(`Successfully processed patient event. Record ID: ${result.id}`);
 
     } catch (error) {
       console.error('CRITICAL: Failed to process patient event record', {

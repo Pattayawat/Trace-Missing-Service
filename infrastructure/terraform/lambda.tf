@@ -82,6 +82,22 @@ resource "aws_lambda_function" "patient_event_handler" {
   }
 }
 
+resource "aws_lambda_function" "shelter_event_handler" {
+  function_name = "${var.project_name}-shelter-event-handler-${var.env}"
+  role          = data.aws_iam_role.lab_role.arn
+  handler       = "handlers/shelter-event-handler.handler"
+  runtime       = "nodejs20.x"
+  memory_size   = 256
+  timeout       = 30
+  
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  environment {
+    variables = local.common_env_vars
+  }
+}
+
 resource "aws_lambda_event_source_mapping" "worker_sqs" {
   event_source_arn = aws_sqs_queue.matching_jobs.arn
   function_name    = aws_lambda_function.worker_handler.arn
@@ -91,5 +107,11 @@ resource "aws_lambda_event_source_mapping" "worker_sqs" {
 resource "aws_lambda_event_source_mapping" "patient_events_sqs" {
   event_source_arn = aws_sqs_queue.patient_events.arn
   function_name    = aws_lambda_function.patient_event_handler.arn
+  batch_size       = 5
+}
+
+resource "aws_lambda_event_source_mapping" "shelter_events_sqs" {
+  event_source_arn = aws_sqs_queue.shelter_jobs.arn
+  function_name    = aws_lambda_function.shelter_event_handler.arn
   batch_size       = 5
 }
