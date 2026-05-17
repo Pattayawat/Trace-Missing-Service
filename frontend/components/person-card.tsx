@@ -82,7 +82,20 @@ export function PersonCard({
 }: PersonCardProps) {
   const { getIncidentById } = useIncident()
   const incident = getIncidentById(person.incidentId)
+  
   const displayName = person.name || `${person.gender === "male" ? "ผู้ชาย" : person.gender === "female" ? "ผู้หญิง" : "บุคคล"}ไม่ทราบตัวตน`
+
+  // Map ageGroup values to Thai labels
+  const ageGroupLabels: Record<string, string> = {
+    infant: "ทารก",
+    child: "เด็ก",
+    teen: "วัยรุ่น",
+    "young-adult": "ผู้ใหญ่ตอนต้น",
+    "middle-aged": "วัยกลางคน",
+    elderly: "ผู้สูงอายุ",
+    ADULT: "ผู้ใหญ่",
+    CHILD: "เด็ก"
+  }
 
   return (
     <Card className="group relative overflow-hidden transition-all hover:shadow-md hover:border-primary/30 py-0">
@@ -135,11 +148,9 @@ export function PersonCard({
               <h3 className="truncate text-base font-semibold text-foreground">
                 {displayName}
               </h3>
-              {person.age && (
-                <p className="text-sm text-muted-foreground">
-                  อายุ {person.age} ปี, {person.gender === "male" ? "ชาย" : person.gender === "female" ? "หญิง" : "ไม่ระบุเพศ"}
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground">
+                {ageGroupLabels[person.ageGroup || ""] || "ไม่ระบุช่วงวัย"}, {person.gender === "male" ? "ชาย" : person.gender === "female" ? "หญิง" : "ไม่ระบุเพศ"}
+              </p>
             </div>
             <TypeBadge type={person.type} />
           </div>

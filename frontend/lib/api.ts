@@ -86,16 +86,36 @@ export async function createPerson(data: Omit<Person, "id" | "caseId"> & { photo
 
   if (!API_URL) {
     await delay(800);
-    return { ...data, id: Math.random().toString(), caseId: "MP-MOCK" };
+    return { ...data, id: Math.random().toString(), caseId: "MP-MOCK", photoUrl: photoUrl || null };
   }
+
+  // Split name for backend
+  const [firstName = "", ...rest] = (data.name || "").split(" ");
+  const lastName = rest.join(" ");
+
+  // Map person type to reportType
+  const reportTypeMap: Record<string, string> = {
+    "missing-person": "missing-person",
+    "survivor": "unidentified-victim",
+    "unidentified-body": "unidentified-deceased"
+  };
 
   const response = await fetch(`${API_URL}/reports`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       incidentId: data.incidentId,
-      details: `${data.name} - ${data.description}`,
+      details: data.name ? `${data.name} - ${data.description}` : data.description,
       photoUrl: photoUrl,
+      location: data.location,
+      firstName: firstName,
+      lastName: lastName,
+      gender: data.gender,
+      ageCategory: data.ageGroup,
+      age: data.age,
+      reportType: reportTypeMap[data.type] || "missing-person",
+      isUnidentified: data.type !== "missing-person",
+      lifeStatus: data.type === "unidentified-body" ? "DEAD" : "ALIVE"
     }),
   });
 
@@ -160,35 +180,49 @@ export async function fetchIncident(incidentId: string): Promise<Incident | null
   return incidents.find((i) => i.incidentId === incidentId) || null
 }
 
-// Fetch persons (optionally filtered by incident)
-export async function fetchPersons(incidentId?: string): Promise<Person[]> {
+// Fetch persons (optionally filtered by incident and type)
+export async function fetchPersons(incidentId?: string, type?: Person["type"]): Promise<Person[]> {
   if (!API_URL) return [];
 
   try {
     const url = new URL(`${API_URL}/reports`);
     if (incidentId) url.searchParams.append('incidentId', incidentId);
     
+    // Map internal type to reportType
+    const reportTypeMap: Record<string, string> = {
+      "missing-person": "missing-person",
+      "survivor": "unidentified-victim",
+      "unidentified-body": "unidentified-deceased"
+    };
+    if (type) url.searchParams.append('reportType', reportTypeMap[type]);
+    
     const response = await fetch(url.toString());
     if (!response.ok) return [];
     const data = await response.json();
     
-    const persons: Person[] = data.map((r: any) => ({
-      id: r.id.toString(),
-      type: "missing-person",
-      status: r.status === 'pending' ? 'missing' : 'found',
-      name: r.details?.split(' - ')[0] || "Unknown",
-      citizenId: null,
-      caseId: `MP-2026-${r.id}`,
-      ageGroup: "adult",
-      gender: "other",
-      location: "Unknown",
-      lastSeenDate: r.created_at,
-      photoUrl: r.photo_url || null,
-      description: r.details?.split(' - ')[1] || r.details || "",
-      incidentId: r.incident_id,
-    }));
+    return data.map((r: any) => {
+      // Reverse map reportType to internal type
+      let personType: Person["type"] = "missing-person";
+      if (r.report_type === "unidentified-victim") personType = "survivor";
+      if (r.report_type === "unidentified-deceased") personType = "unidentified-body";
 
-    return persons;
+      return {
+        id: r.id.toString(),
+        type: personType,
+        status: r.status === 'pending' ? 'missing' : 'found',
+        name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : (r.details?.split(' - ')[0] || null),
+        citizenId: null,
+        caseId: `MP-2026-${r.id}`,
+        ageGroup: r.age_category || "adult",
+        age: r.age,
+        gender: r.gender || "unknown",
+        location: r.location || "Unknown",
+        lastSeenDate: r.created_at,
+        photoUrl: r.photo_url || null,
+        description: r.details?.split(' - ')[1] || r.details || "",
+        incidentId: r.incident_id,
+      };
+    });
   } catch (e) {
     return [];
   }
@@ -208,10 +242,10 @@ export async function fetchDashboardMetrics(incidentId?: string): Promise<Dashbo
   const persons = await fetchPersons(incidentId);
 
   return {
-    totalMissing: persons.filter((p) => p.status === "missing").length,
+    totalMissing: persons.filter((p) => p.type === "missing-person").length,
     totalFound: persons.filter((p) => p.status === "found").length,
-    totalSafe: 0,
-    totalUnidentified: 0,
+    totalSafe: persons.filter((p) => p.type === "survivor").length,
+    totalUnidentified: persons.filter((p) => p.type === "unidentified-body").length,
     openCases: persons.filter((p) => p.status === "missing").length,
   }
 }

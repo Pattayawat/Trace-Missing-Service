@@ -5,7 +5,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 const s3 = new S3Client({});
 
 export const handler = async (event) => {
-  const { routeKey, pathParameters, body } = event;
+  const { routeKey, pathParameters, body, queryStringParameters } = event;
   const userId = event.requestContext?.authorizer?.jwt?.claims?.sub || 'demo-user';
 
   try {
@@ -19,7 +19,11 @@ export const handler = async (event) => {
     }
 
     if (routeKey === 'GET /reports') {
-      const reports = await reportService.listReports();
+      const filters = {
+        incidentId: queryStringParameters?.incidentId,
+        reportType: queryStringParameters?.reportType,
+      };
+      const reports = await reportService.listReports(filters);
       return {
         statusCode: 200,
         body: JSON.stringify(reports),
@@ -44,9 +48,11 @@ export const handler = async (event) => {
       });
 
       const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
+      // Construct the public URL for viewing (assuming public read is allowed or using S3 domain)
+      const photoUrl = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${key}`;
       return {
         statusCode: 200,
-        body: JSON.stringify({ uploadUrl, key }),
+        body: JSON.stringify({ uploadUrl, key, photoUrl }),
       };
     }
 

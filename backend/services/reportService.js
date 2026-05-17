@@ -23,6 +23,6 @@ export const createReport = async (reportData) => {
   return report;
 };
 
-export const listReports = () => reportRepo.getReports();
+export const listReports = (filters) => reportRepo.getReports(filters);
 export const listIncidents = () => reportRepo.getIncidents();
 export const getReport = (id) => reportRepo.getReportById(id);

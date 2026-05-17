@@ -103,6 +103,7 @@ export function UnidentifiedSurvivorForm() {
         location: formData.locationFound,
         lastSeenDate: formData.timeFound,
         photoUrl: null,
+        photo: formData.photo, // Pass the File object for upload
         description: `${formData.physicalDescription}\n\nตำหนิ: ${formData.tattoos}\n\nการแต่งกาย: ${formData.clothing}\n\nอาชีพ: ${formData.occupation}\n\nแพทย์: ${formData.medicalInfo}`,
         incidentId: formData.incidentId,
       })

@@ -102,7 +102,7 @@ function IncidentCard({ incident, caseCount, onSelect }: IncidentCardProps) {
   return (
     <Card
       className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/30"
-      onClick={() => router.push(`/incidents/${incident.incidentId}`)}
+      onClick={() => router.push(`/incidents/detail?id=${incident.incidentId}`)}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
