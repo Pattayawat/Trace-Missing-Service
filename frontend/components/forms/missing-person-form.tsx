@@ -190,6 +190,7 @@ export function MissingPersonForm() {
         location: formData.locationLost,
         lastSeenDate: formData.timeLost,
         photoUrl: null,
+        photo: formData.photo, // Pass the File object for upload
         description: `${formData.physicalDescription}\n\nตำหนิ: ${formData.tattoos}\n\nการแต่งกาย: ${formData.clothing}`,
         contactPhone: formData.reporterPhone,
         incidentId: formData.incidentId,

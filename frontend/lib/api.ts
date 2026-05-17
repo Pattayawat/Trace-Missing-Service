@@ -52,7 +52,38 @@ export const mockIncidents: Incident[] = [
 // ============================================
 
 // Create person record (maps to Report in backend lite)
-export async function createPerson(data: Omit<Person, "id" | "caseId">): Promise<Person> {
+export async function createPerson(data: Omit<Person, "id" | "caseId"> & { photo?: File | null }): Promise<Person> {
+  let photoUrl = data.photoUrl;
+
+  // 1. Handle Photo Upload if File is provided
+  if (data.photo && API_URL) {
+    try {
+      const uploadRes = await fetch(`${API_URL}/reports/upload-url`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: data.photo.name,
+          contentType: data.photo.type,
+        }),
+      });
+      
+      if (uploadRes.ok) {
+        const { uploadUrl, photoUrl: publicUrl } = await uploadRes.json();
+        
+        // Upload to S3
+        await fetch(uploadUrl, {
+          method: 'PUT',
+          body: data.photo,
+          headers: { 'Content-Type': data.photo.type },
+        });
+        
+        photoUrl = publicUrl;
+      }
+    } catch (e) {
+      console.error("Photo upload failed", e);
+    }
+  }
+
   if (!API_URL) {
     await delay(800);
     return { ...data, id: Math.random().toString(), caseId: "MP-MOCK" };
@@ -62,8 +93,9 @@ export async function createPerson(data: Omit<Person, "id" | "caseId">): Promise
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      incidentId: parseInt(data.incidentId.split('-').pop() || "1"),
+      incidentId: data.incidentId,
       details: `${data.name} - ${data.description}`,
+      photoUrl: photoUrl,
     }),
   });
 
@@ -75,6 +107,7 @@ export async function createPerson(data: Omit<Person, "id" | "caseId">): Promise
     ...data,
     id: result.id.toString(),
     caseId: `MP-2026-${result.id}`,
+    photoUrl: result.photo_url || photoUrl || null,
   };
 }
 
@@ -132,7 +165,10 @@ export async function fetchPersons(incidentId?: string): Promise<Person[]> {
   if (!API_URL) return [];
 
   try {
-    const response = await fetch(`${API_URL}/reports`);
+    const url = new URL(`${API_URL}/reports`);
+    if (incidentId) url.searchParams.append('incidentId', incidentId);
+    
+    const response = await fetch(url.toString());
     if (!response.ok) return [];
     const data = await response.json();
     
@@ -147,14 +183,11 @@ export async function fetchPersons(incidentId?: string): Promise<Person[]> {
       gender: "other",
       location: "Unknown",
       lastSeenDate: r.created_at,
-      photoUrl: null,
+      photoUrl: r.photo_url || null,
       description: r.details?.split(' - ')[1] || r.details || "",
-      incidentId: `INC-2026-${r.incident_id}`,
+      incidentId: r.incident_id,
     }));
 
-    if (incidentId) {
-      return persons.filter((p) => p.incidentId === incidentId)
-    }
     return persons;
   } catch (e) {
     return [];
