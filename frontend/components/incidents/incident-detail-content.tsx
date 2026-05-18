@@ -1,5 +1,5 @@
 "use client"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import useSWR from "swr"
 import { 
   fetchIncident, 
@@ -29,21 +29,25 @@ import type { Person } from "@/lib/types"
 
 export default function IncidentDetailContent() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const router = useRouter()
-  const incidentId = params.id as string
+  
+  // Get incidentId from either path params or search params
+  const rawId = (params?.id as string) || searchParams.get("id")
+  const incidentId = rawId || ""
 
   const { data: incident, error: incidentError, isLoading: incidentLoading } = useSWR(
-    `incident-${incidentId}`,
+    incidentId ? `incident-${incidentId}` : null,
     () => fetchIncident(incidentId)
   )
 
   const { data: metrics, isLoading: metricsLoading } = useSWR(
-    `metrics-${incidentId}`,
+    incidentId ? `metrics-${incidentId}` : null,
     () => fetchDashboardMetrics(incidentId)
   )
 
   const { data: persons = [], isLoading: personsLoading } = useSWR(
-    `persons-${incidentId}`,
+    incidentId ? `persons-${incidentId}` : null,
     () => fetchPersons(incidentId)
   )
 
@@ -59,7 +63,7 @@ export default function IncidentDetailContent() {
     )
   }
 
-  if (incidentError || !incident) {
+  if (incidentError || !incident || !incidentId) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <AlertTriangle className="h-16 w-16 text-destructive mb-4" />

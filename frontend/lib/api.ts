@@ -176,8 +176,28 @@ export async function fetchActiveIncidents(): Promise<Incident[]> {
 
 // Fetch single incident
 export async function fetchIncident(incidentId: string): Promise<Incident | null> {
+  if (!incidentId) return null;
+  
   const incidents = await fetchIncidents();
-  return incidents.find((i) => i.incidentId === incidentId) || null
+  const found = incidents.find((i) => 
+    String(i.incidentId).toLowerCase() === String(incidentId).toLowerCase()
+  );
+  
+  if (found) return found;
+
+  // Fallback: If not found in current list but we have an ID, 
+  // we return a basic Incident object so the page can still render reports
+  // This helps if the incident is older and not in the "active/recent" list from the API
+  return {
+    incidentId: incidentId,
+    incidentName: `Incident ${incidentId.substring(0, 8)}`,
+    incidentType: "other",
+    province: "Unknown",
+    location: "Unknown",
+    incidentStatus: "monitoring",
+    startDate: new Date().toISOString(),
+    description: "No additional metadata found for this incident ID.",
+  };
 }
 
 // Fetch persons (optionally filtered by incident and type)
@@ -459,7 +479,7 @@ export async function fetchCaseDetail(id: string): Promise<CaseDetail | null> {
     data.person = {
       id: r.id.toString(),
       type: personType,
-      status: r.status,
+    status: r.status,
       name: r.first_name && r.last_name ? `${r.first_name} ${r.last_name}` : (r.details?.split(' - ')[0] || null),
       citizenId: r.citizen_id || null,
       caseId: `MP-2026-${r.id}`,
