@@ -171,9 +171,9 @@ export const createReunification = async (reunificationData) => {
     INSERT INTO reunifications (report_id, matched_report_id, status, details)
     VALUES ($1, $2, $3, $4)
     ON CONFLICT (report_id) DO UPDATE SET 
-      matched_report_id = EXCLUDED.matched_report_id,
+      matched_report_id = COALESCE(EXCLUDED.matched_report_id, reunifications.matched_report_id),
       status = EXCLUDED.status, 
-      details = EXCLUDED.details, 
+      details = reunifications.details || EXCLUDED.details, 
       matched_at = CURRENT_TIMESTAMP
     RETURNING *
   `;
