@@ -105,17 +105,11 @@ export const findDuplicateReport = async (data) => {
     if (rows.length > 0) return rows[0];
   }
 
-  // 2. Fallback check by firstName, lastName, gender (Fuzzy matching criteria)
-  if (data.firstName && data.lastName && data.gender) {
-    const rawGender = data.gender;
-    let genderMatch = rawGender;
-    // Normalize for DB query if needed
-    if (rawGender.includes('ชาย') || rawGender.toLowerCase() === 'male' || rawGender.toLowerCase() === 'm') genderMatch = 'male';
-    if (rawGender.includes('หญิง') || rawGender.toLowerCase() === 'female' || rawGender.toLowerCase() === 'f') genderMatch = 'female';
-
+  // 2. Fallback check by firstName and lastName
+  if (data.firstName && data.lastName) {
     const { rows } = await db.query(
-      'SELECT * FROM missing_reports WHERE first_name ILIKE $1 AND last_name ILIKE $2 AND (gender = $3 OR gender = $4) AND report_type = $5 AND deleted_at IS NULL',
-      [data.firstName, data.lastName, genderMatch, rawGender, reportType]
+      'SELECT * FROM missing_reports WHERE first_name ILIKE $1 AND last_name ILIKE $2 AND report_type = $3 AND deleted_at IS NULL',
+      [data.firstName, data.lastName, reportType]
     );
     if (rows.length > 0) return rows[0];
   }
@@ -124,34 +118,24 @@ export const findDuplicateReport = async (data) => {
 };
 
 export const findAllMatchingReports = async (data) => {
-  const db = getDbConnection();
+...
   const citizenId = data.citizenId || data.citizen_id;
-  const firstName = data.firstName || data.first_name || data.firstName;
-  const lastName = data.lastName || data.last_name || data.lastName;
-  const rawGender = data.gender;
+  const firstName = data.firstName || data.first_name;
+  const lastName = data.lastName || data.last_name;
 
   const conditions = [];
-  const values = [];
-
-  if (citizenId) {
+...
     values.push(citizenId);
     conditions.push(`citizen_id = $${values.length}`);
   }
 
-  if (firstName && lastName && rawGender) {
-    let genderMatch = rawGender;
-    if (rawGender.includes('ชาย') || rawGender.toLowerCase() === 'male' || rawGender.toLowerCase() === 'm') genderMatch = 'male';
-    if (rawGender.includes('หญิง') || rawGender.toLowerCase() === 'female' || rawGender.toLowerCase() === 'f') genderMatch = 'female';
-
-    values.push(firstName, lastName, genderMatch, rawGender);
-    conditions.push(`(first_name ILIKE $${values.length - 3} AND last_name ILIKE $${values.length - 2} AND (gender = $${values.length - 1} OR gender = $${values.length}))`);
+  if (firstName && lastName) {
+    values.push(firstName, lastName);
+    conditions.push(`(first_name ILIKE $${values.length - 1} AND last_name ILIKE $${values.length})`);
   }
 
   if (conditions.length === 0) return [];
-
-  const query = `SELECT * FROM missing_reports WHERE deleted_at IS NULL AND (${conditions.join(' OR ')})`;
-  const { rows } = await db.query(query, values);
-  return rows;
+...
 };
 
 export const updateReportLocation = async (id, locationData) => {

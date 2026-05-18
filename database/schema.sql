@@ -29,7 +29,10 @@ CREATE TABLE IF NOT EXISTS cases (
 CREATE TABLE IF NOT EXISTS persons (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     case_id UUID REFERENCES cases(id),
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
     full_name VARCHAR(255) NOT NULL,
+    citizen_id VARCHAR(20),
     gender VARCHAR(50),
     date_of_birth DATE,
     physical_description TEXT,
@@ -66,7 +69,10 @@ CREATE TABLE IF NOT EXISTS matching_jobs (
 CREATE TABLE IF NOT EXISTS shelter_person_cache (
     resident_id VARCHAR(255) PRIMARY KEY,
     shelter_id VARCHAR(255) NOT NULL,
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
     full_name VARCHAR(255),
+    citizen_id VARCHAR(20),
     gender VARCHAR(50),
     date_of_birth DATE,
     face_embedding vector(512),

@@ -20,18 +20,18 @@ export const updateMatchingJobStatus = async (client, jobId, status) => {
 export const getShelterPersonMatchRuleBased = async (client, personId) => {
   const db = client || await getDbConnection();
   const query = `
-    SELECT spc.*, 
-      CASE WHEN p.full_name ILIKE spc.full_name THEN 0.4 ELSE 0 END +
-      CASE WHEN p.gender = spc.gender THEN 0.2 ELSE 0 END +
-      CASE WHEN p.date_of_birth = spc.date_of_birth THEN 0.4 ELSE 0 END AS score
-    FROM persons p
-    JOIN shelter_person_cache spc ON spc.is_active = true
-    WHERE p.id = $1
-    HAVING (
-      CASE WHEN p.full_name ILIKE spc.full_name THEN 0.4 ELSE 0 END +
-      CASE WHEN p.gender = spc.gender THEN 0.2 ELSE 0 END +
-      CASE WHEN p.date_of_birth = spc.date_of_birth THEN 0.4 ELSE 0 END
-    ) > 0.3
+    SELECT * FROM (
+      SELECT spc.*, 
+        CASE 
+          WHEN p.citizen_id IS NOT NULL AND spc.citizen_id IS NOT NULL AND p.citizen_id = spc.citizen_id THEN 1.0
+          WHEN p.first_name ILIKE spc.first_name AND p.last_name ILIKE spc.last_name THEN 0.9
+          ELSE 0 
+        END AS score
+      FROM persons p
+      JOIN shelter_person_cache spc ON spc.is_active = true
+      WHERE p.id = $1
+    ) sub
+    WHERE score > 0.5
     ORDER BY score DESC
   `;
   const { rows } = await db.query(query, [personId]);

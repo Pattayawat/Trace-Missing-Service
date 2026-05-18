@@ -3,20 +3,22 @@ import { getDbConnection } from '../utils/db.js';
 export const createPerson = async (client, personData) => {
   const db = client || await getDbConnection();
   const query = `
-    INSERT INTO persons (case_id, full_name, gender, date_of_birth, physical_description, last_seen_location, last_seen_date)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    INSERT INTO persons (case_id, first_name, last_name, full_name, citizen_id, gender, date_of_birth, physical_description, last_seen_location, last_seen_date)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     RETURNING *
   `;
   const values = [
-    personData.caseId, personData.fullName, personData.gender, personData.dateOfBirth,
-    personData.physicalDescription, personData.lastSeenLocation, personData.lastSeenDate
+    personData.caseId, personData.firstName, personData.lastName, personData.fullName, personData.citizenId,
+    personData.gender, personData.dateOfBirth, personData.physicalDescription, 
+    personData.lastSeenLocation, personData.lastSeenDate
   ];
   const { rows } = await db.query(query, values);
   return rows[0];
 };
 
 export const createPersonPhoto = async (client, personId, filePath, isPrimary = false) => {
-  const db = client || await getDbConnection();
+...
+
   const query = `
     INSERT INTO person_photos (person_id, file_path, status, is_primary)
     VALUES ($1, $2, 'pending', $3)
