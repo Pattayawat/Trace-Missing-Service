@@ -6,9 +6,9 @@ export const createReport = async (reportData) => {
     INSERT INTO missing_reports (
       reporter_id, incident_id, details, status, photo_url, location,
       is_unidentified, source, hospital_id, age_category, gender, life_status, first_name, last_name, age, report_type,
-      latitude, longitude
+      latitude, longitude, citizen_id
     )
-    VALUES ($1, $2, $3, 'REPORTED', $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+    VALUES ($1, $2, $3, 'REPORTED', $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
     RETURNING *
   `;
   const values = [
@@ -28,7 +28,8 @@ export const createReport = async (reportData) => {
     reportData.age || null,
     reportData.reportType || reportData.report_type || 'missing-person',
     reportData.latitude || reportData.lat || null,
-    reportData.longitude || reportData.long || null
+    reportData.longitude || reportData.long || null,
+    reportData.citizenId || reportData.citizen_id || null
   ];
   const { rows } = await db.query(query, values);
   return rows[0];
@@ -72,8 +73,10 @@ export const findReportByExternalId = async (externalId, source) => {
 
 export const findReportByCitizenId = async (citizenId) => {
   const db = getDbConnection();
+  // BUG FIX #2 & #3: When searching for potential matches or duplicates, 
+  // we often specifically look for 'missing-person' type to avoid mixing with 'unidentified' ones.
   const { rows } = await db.query(
-    'SELECT * FROM missing_reports WHERE citizen_id = $1 AND deleted_at IS NULL',
+    'SELECT * FROM missing_reports WHERE citizen_id = $1 AND report_type = \'missing-person\' AND deleted_at IS NULL',
     [citizenId]
   );
   return rows[0];
@@ -82,10 +85,63 @@ export const findReportByCitizenId = async (citizenId) => {
 export const findReportByNames = async (firstName, lastName) => {
   const db = getDbConnection();
   const { rows } = await db.query(
-    'SELECT * FROM missing_reports WHERE first_name ILIKE $1 AND last_name ILIKE $2 AND deleted_at IS NULL',
+    'SELECT * FROM missing_reports WHERE first_name ILIKE $1 AND last_name ILIKE $2 AND report_type = \'missing-person\' AND deleted_at IS NULL',
     [firstName, lastName]
   );
   return rows[0];
+};
+
+export const findDuplicateReport = async (data) => {
+  const db = getDbConnection();
+  const reportType = data.reportType || data.report_type || 'missing-person';
+  const citizenId = data.citizenId || data.citizen_id;
+  
+  // 1. Priority check by citizen_id (must scope to same report_type to prevent Cross-Type Duplicates)
+  if (citizenId) {
+    const { rows } = await db.query(
+      'SELECT * FROM missing_reports WHERE citizen_id = $1 AND report_type = $2 AND deleted_at IS NULL',
+      [citizenId, reportType]
+    );
+    if (rows.length > 0) return rows[0];
+  }
+
+  // 2. Fallback check by firstName, lastName, gender (Fuzzy matching criteria)
+  if (data.firstName && data.lastName && data.gender) {
+    const { rows } = await db.query(
+      'SELECT * FROM missing_reports WHERE first_name ILIKE $1 AND last_name ILIKE $2 AND gender = $3 AND report_type = $4 AND deleted_at IS NULL',
+      [data.firstName, data.lastName, data.gender, reportType]
+    );
+    if (rows.length > 0) return rows[0];
+  }
+
+  return null;
+};
+
+export const findAllMatchingReports = async (data) => {
+  const db = getDbConnection();
+  const citizenId = data.citizenId || data.citizen_id;
+  const firstName = data.firstName || data.first_name || data.firstName;
+  const lastName = data.lastName || data.last_name || data.lastName;
+  const gender = data.gender;
+
+  const conditions = [];
+  const values = [];
+
+  if (citizenId) {
+    values.push(citizenId);
+    conditions.push(`citizen_id = $${values.length}`);
+  }
+
+  if (firstName && lastName && gender) {
+    values.push(firstName, lastName, gender);
+    conditions.push(`(first_name ILIKE $${values.length - 2} AND last_name ILIKE $${values.length - 1} AND gender = $${values.length})`);
+  }
+
+  if (conditions.length === 0) return [];
+
+  const query = `SELECT * FROM missing_reports WHERE deleted_at IS NULL AND (${conditions.join(' OR ')})`;
+  const { rows } = await db.query(query, values);
+  return rows;
 };
 
 export const updateReportLocation = async (id, locationData) => {
@@ -93,7 +149,8 @@ export const updateReportLocation = async (id, locationData) => {
   const query = `
     UPDATE missing_reports 
     SET location = $1, last_updated_by = $2, life_status = COALESCE($3, life_status),
-        latitude = COALESCE($4, latitude), longitude = COALESCE($5, longitude)
+        latitude = COALESCE($4, latitude), longitude = COALESCE($5, longitude),
+        updated_at = CURRENT_TIMESTAMP
     WHERE id = $6
     RETURNING *
   `;

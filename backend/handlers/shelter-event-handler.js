@@ -25,7 +25,7 @@ export const handler = async (event) => {
         lastName: data.lastName
       });
 
-      // 1. Perform Matching and Update Reunification Status
+      // 1. Perform Matching (Service will now find related Survivor records if they exist)
       const result = await reportService.matchAndReunify({
         citizenId: data.citizenId,
         firstName: data.firstName,

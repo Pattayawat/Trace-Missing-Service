@@ -26,6 +26,16 @@ CREATE TABLE IF NOT EXISTS missing_reports (
   longitude DOUBLE PRECISION
 );
 
+-- 1. ป้องกันสร้างคนเดิมซ้ำในสถานะเดียวกัน (ถ้ามี Citizen ID)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_citizen_report_type 
+ON missing_reports (citizen_id, report_type) 
+WHERE deleted_at IS NULL AND citizen_id IS NOT NULL;
+
+-- 2. ป้องกันยิง Request/Message ชุดเดิมซ้ำ
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_external_id_source 
+ON missing_reports (external_id, source) 
+WHERE deleted_at IS NULL AND external_id IS NOT NULL;
+
 CREATE TABLE IF NOT EXISTS matching_results (
   id SERIAL PRIMARY KEY,
   report_id INT REFERENCES missing_reports(id),

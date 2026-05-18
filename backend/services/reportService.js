@@ -4,6 +4,12 @@ import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 const sqs = new SQSClient({});
 
 export const createReport = async (reportData) => {
+  // Enforce duplicate check for both Web App and SQS
+  const duplicate = await reportRepo.findDuplicateReport(reportData);
+  if (duplicate) {
+    throw new Error('Duplicate report detected');
+  }
+
   const report = await reportRepo.createReport(reportData);
   await reportRepo.addCaseEvent(report.id, 'REPORT_CREATED', 'Missing person report created in system');
   
@@ -59,79 +65,96 @@ export const updateReportStatus = async (id, status) => {
 };
 
 export const processPersonMovement = async (data) => {
-  // Try to find existing person by external identifier or citizen ID
-  let existing = null;
-  if (data.externalId) {
-    existing = await reportRepo.findReportByExternalId(data.externalId, data.source);
-  }
-  if (!existing && data.citizenId) {
-    existing = await reportRepo.findReportByCitizenId(data.citizenId);
-  }
+  const allMatches = await reportRepo.findAllMatchingReports(data);
+  const targetType = data.reportType || data.report_type || 'unidentified-victim';
+  
+  let existingTypedRecord = null;
 
-  if (existing) {
-    console.log(`Updating movement for existing person: ${existing.id}`);
-    const updated = await reportRepo.updateReportLocation(existing.id, {
-      location: data.location,
-      source: data.source,
-      lifeStatus: data.lifeStatus,
-      lat: data.latitude || data.lat,
-      long: data.longitude || data.long
-    });
-    
-    await reportRepo.addCaseEvent(existing.id, 'LOCATION_UPDATED', `Person location updated to ${data.location} via ${data.source}`);
-    
-    // Auto-transition to MATCHING if moved via Pre-Arrival (Hospital)
-    if (data.source === 'PreArrivalNotificationService' && (existing.status === 'REPORTED' || existing.status === 'ACTIVE' || existing.status === 'missing')) {
-      await updateReportStatus(existing.id, 'MATCHING');
+  if (allMatches.length > 0) {
+    for (const record of allMatches) {
+      if (record.report_type === targetType) {
+        existingTypedRecord = record;
+      }
+      
+      // Update location for Unidentified records
+      if (record.report_type === 'unidentified-victim' || record.report_type === 'unidentified-deceased') {
+        await reportRepo.updateReportLocation(record.id, {
+          location: data.location,
+          source: data.source,
+          lifeStatus: data.lifeStatus,
+          lat: data.latitude || data.lat,
+          long: data.longitude || data.long
+        });
+      } 
+      
+      // Track event for Missing Person
+      if (record.report_type === 'missing-person') {
+        if (data.source === 'PreArrivalNotificationService') {
+          await updateReportStatus(record.id, 'MATCHING');
+        }
+        await reportRepo.addCaseEvent(record.id, 'LOCATION_UPDATED', `Person seen at ${data.location} (via ${data.source})`);
+      }
     }
-
-    return updated;
   }
 
-  // Create new record if not found
-  console.log('Creating new record for movement event');
-  const newReport = await createReport(data);
-  return newReport;
+  // Create new record (e.g. Hospital reporting for first time)
+  if (!existingTypedRecord) {
+    const newReport = await reportRepo.createReport(data);
+    await reportRepo.addCaseEvent(newReport.id, 'REPORT_CREATED', `Record created via movement event (${data.source})`);
+    
+    // SMART LINKING: If this is a Survivor record, check if a Reunification already exists for this person (from Shelter)
+    // and link this new record as the 'matched_report_id' so the UI gets the photo.
+    if (newReport.report_type === 'unidentified-victim') {
+      const missingPersonMatch = allMatches.find(r => r.report_type === 'missing-person');
+      if (missingPersonMatch) {
+        await reportRepo.createReunification({
+          reportId: missingPersonMatch.id,
+          matchedReportId: newReport.id,
+          status: 'MATCHING',
+          details: { linkedVia: 'lazy_creation' }
+        });
+      }
+    }
+    
+    return newReport;
+  }
+
+  return existingTypedRecord;
 };
 
 export const matchAndReunify = async (shelterData) => {
-  let matched = null;
+  let matchedMissing = null;
   
   if (shelterData.citizenId) {
-    matched = await reportRepo.findReportByCitizenId(shelterData.citizenId);
+    matchedMissing = await reportRepo.findReportByCitizenId(shelterData.citizenId);
   }
-  
-  if (!matched && shelterData.firstName && shelterData.lastName) {
-    matched = await reportRepo.findReportByNames(shelterData.firstName, shelterData.lastName);
+  if (!matchedMissing && shelterData.firstName && shelterData.lastName) {
+    matchedMissing = await reportRepo.findReportByNames(shelterData.firstName, shelterData.lastName);
   }
 
-  if (matched) {
-    console.log(`Match found! Updating reunification for report: ${matched.id}`);
-    
-    // 1. Update person location and status
-    await reportRepo.updateReportLocation(matched.id, {
-      location: `Shelter: ${shelterData.shelterId}`,
-      source: 'ShelterService',
-      lifeStatus: 'ALIVE',
-      lat: shelterData.lat,
-      long: shelterData.long
-    });
+  if (matchedMissing) {
+    console.log(`Shelter match found for Missing Person ${matchedMissing.id}. Recording activity only.`);
 
-    await reportRepo.updateReportStatus(matched.id, 'MATCHING');
-    await reportRepo.addCaseEvent(matched.id, 'MATCH_DETECTED', `Potential match found at Shelter ${shelterData.shelterId} (Shelter Service Check-in)`);
+    // Update Missing Person timeline
+    await reportRepo.updateReportStatus(matchedMissing.id, 'MATCHING');
+    await reportRepo.addCaseEvent(matchedMissing.id, 'SHELTER_CHECKIN', `Checked in at Shelter: ${shelterData.shelterId}`);
 
-    // 2. Create/Update reunification status
+    // Create reunification record WITHOUT a matched_report_id yet (since we don't want to create unidentified record)
+    // The Pre-arrival service will link its record here later when it sends data.
     return await reportRepo.createReunification({
-      reportId: matched.id,
+      reportId: matchedMissing.id,
+      matchedReportId: null, // Keep null as requested: don't create survivor record yet
       status: 'MATCHING',
       details: {
         shelterId: shelterData.shelterId,
         rosterId: shelterData.rosterId,
-        matchedVia: shelterData.citizenId ? 'citizenId' : 'names'
+        matchedVia: shelterData.citizenId ? 'citizenId' : 'names',
+        foundLocation: `Shelter: ${shelterData.shelterId}`,
+        lastSeenAt: new Date().toISOString(),
+        note: 'Verified at shelter, awaiting hospital/pre-arrival details and photo.'
       }
     });
   }
 
-  console.log('No match found for shelter evacuee');
   return null;
 };

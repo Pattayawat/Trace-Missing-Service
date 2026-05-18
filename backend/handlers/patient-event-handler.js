@@ -29,25 +29,39 @@ export const handler = async (event) => {
       // Handle optional SNS wrapper
       const body = rawMessage.Message ? JSON.parse(rawMessage.Message) : rawMessage;
       
-      console.log('Processing PatientReported event from:', body.reported_by || 'unknown');
+      // Support nested 'data' wrapper if present
+      const payload = body.data || body;
+      
+      const source = body.source || body.reported_by || payload.source || payload.reported_by || 'unknown';
+      console.log('Processing PatientReported event from:', source);
 
-      // 1. Validation
-      const hospitalId = body.destination_hospital_id;
-      const photoUrl = body.media?.missing_person_photo;
+      // 1. Validation & Schema Normalization
+      const hospitalId = payload.destination_hospital_id || payload.destinationHospitalId;
+      
+      const media = payload.media || {};
+      const photoUrl = media.missing_person_photo || media.missingPersonPhoto || 
+                       payload.missing_person_photo || payload.missingPersonPhoto || 
+                       payload.photo_url || payload.photoUrl;
 
-      if (!photoUrl || !isValidUrl(photoUrl)) {
-        console.error('Validation Error: missing_person_photo is missing or invalid URL');
+      if (!photoUrl) {
+        console.error('Validation Error: Photo URL is missing. Tried multiple field names (missing_person_photo, missingPersonPhoto, etc.)');
+        console.log('Received Message Body:', JSON.stringify(body, null, 2));
+        continue;
+      }
+
+      if (!isValidUrl(photoUrl)) {
+        console.error(`Validation Error: '${photoUrl}' is not a valid URL. Must include protocol (e.g., https:// or s3://)`);
         continue;
       }
 
       // 2. Data Mapping & Hospital Enrichment
-      const characteristics = body.characteristics || {};
-      const lifeStatus = characteristics.life_status || 'ALIVE';
+      const chars = payload.characteristics || {};
+      const lifeStatus = chars.life_status || chars.lifeStatus || 'ALIVE';
       const reportType = lifeStatus === 'DEAD' ? 'unidentified-deceased' : 'unidentified-victim';
       
-      let location = characteristics.found_location || 'Unknown';
-      let lat = body.lat || characteristics.latitude;
-      let lon = body.long || characteristics.longitude;
+      let location = chars.found_location || chars.foundLocation || 'Unknown';
+      let lat = payload.lat || payload.latitude || chars.latitude;
+      let lon = payload.long || payload.longitude || chars.longitude;
 
       // ENRICHMENT: Fetch Hospital Details if ID is provided
       if (hospitalId) {
@@ -65,27 +79,28 @@ export const handler = async (event) => {
 
       const reportData = {
         userId: 'system-prearrival-service',
-        externalId: body.message_id || body.MessageId, // Deduplication key
+        externalId: body.message_id || body.MessageId || body.traceId || payload.traceId, // Deduplication key
         incidentId: null,
         details: `
-Physical Desc: ${characteristics.physical_desc || 'N/A'}
-Remark: ${characteristics.physical_remark || 'N/A'}
-Clothes: ${characteristics.clothes_desc || 'N/A'}
-Job: ${characteristics.job || 'N/A'}
+Physical Desc: ${chars.physical_desc || chars.physicalDesc || 'N/A'}
+Remark: ${chars.physical_remark || chars.physicalRemark || 'N/A'}
+Clothes: ${chars.clothes_desc || chars.clothesDesc || 'N/A'}
+Job: ${chars.job || 'N/A'}
         `.trim(),
         photoUrl: photoUrl,
         location: location,
         lat: lat,
         long: lon,
         isUnidentified: true,
-        source: body.reported_by || 'PreArrivalNotificationService',
+        source: source === 'unknown' ? 'PreArrivalNotificationService' : source,
         hospitalId: hospitalId,
-        ageCategory: characteristics.age_category,
-        gender: characteristics.gender,
+        ageCategory: chars.age_category || chars.ageCategory,
+        gender: chars.gender,
         lifeStatus: lifeStatus,
-        firstName: characteristics.first_name,
-        lastName: characteristics.last_name,
-        reportType: reportType
+        firstName: chars.first_name || chars.firstName,
+        lastName: chars.last_name || chars.lastName,
+        reportType: reportType,
+        citizenId: payload.citizenId || payload.citizen_id || chars.citizenId || chars.citizen_id || null
       };
 
       // 3. Persist Record (with Deduplication and Movement logic)
