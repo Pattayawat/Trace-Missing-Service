@@ -63,6 +63,12 @@ export const handler = async (event) => {
       let lat = payload.lat || payload.latitude || chars.latitude;
       let lon = payload.long || payload.longitude || chars.longitude;
 
+      // NORMALIZE GENDER: Ensure 'ผู้ชาย' / 'male' / 'M' etc map to a stable value for matching
+      const rawGender = chars.gender || 'unknown';
+      let normalizedGender = rawGender;
+      if (rawGender.includes('ชาย') || rawGender.toLowerCase() === 'male' || rawGender.toLowerCase() === 'm') normalizedGender = 'male';
+      if (rawGender.includes('หญิง') || rawGender.toLowerCase() === 'female' || rawGender.toLowerCase() === 'f') normalizedGender = 'female';
+
       // ENRICHMENT: Fetch Hospital Details if ID is provided
       if (hospitalId) {
         console.log(`Enriching report with hospital details: ${hospitalId}`);
@@ -95,7 +101,7 @@ Job: ${chars.job || 'N/A'}
         source: source === 'unknown' ? 'PreArrivalNotificationService' : source,
         hospitalId: hospitalId,
         ageCategory: chars.age_category || chars.ageCategory,
-        gender: chars.gender,
+        gender: normalizedGender, // Use normalized gender for better duplicate detection
         lifeStatus: lifeStatus,
         firstName: chars.first_name || chars.firstName,
         lastName: chars.last_name || chars.lastName,

@@ -107,9 +107,15 @@ export const findDuplicateReport = async (data) => {
 
   // 2. Fallback check by firstName, lastName, gender (Fuzzy matching criteria)
   if (data.firstName && data.lastName && data.gender) {
+    const rawGender = data.gender;
+    let genderMatch = rawGender;
+    // Normalize for DB query if needed
+    if (rawGender.includes('ชาย') || rawGender.toLowerCase() === 'male' || rawGender.toLowerCase() === 'm') genderMatch = 'male';
+    if (rawGender.includes('หญิง') || rawGender.toLowerCase() === 'female' || rawGender.toLowerCase() === 'f') genderMatch = 'female';
+
     const { rows } = await db.query(
-      'SELECT * FROM missing_reports WHERE first_name ILIKE $1 AND last_name ILIKE $2 AND gender = $3 AND report_type = $4 AND deleted_at IS NULL',
-      [data.firstName, data.lastName, data.gender, reportType]
+      'SELECT * FROM missing_reports WHERE first_name ILIKE $1 AND last_name ILIKE $2 AND (gender = $3 OR gender = $4) AND report_type = $5 AND deleted_at IS NULL',
+      [data.firstName, data.lastName, genderMatch, rawGender, reportType]
     );
     if (rows.length > 0) return rows[0];
   }
@@ -122,7 +128,7 @@ export const findAllMatchingReports = async (data) => {
   const citizenId = data.citizenId || data.citizen_id;
   const firstName = data.firstName || data.first_name || data.firstName;
   const lastName = data.lastName || data.last_name || data.lastName;
-  const gender = data.gender;
+  const rawGender = data.gender;
 
   const conditions = [];
   const values = [];
@@ -132,9 +138,13 @@ export const findAllMatchingReports = async (data) => {
     conditions.push(`citizen_id = $${values.length}`);
   }
 
-  if (firstName && lastName && gender) {
-    values.push(firstName, lastName, gender);
-    conditions.push(`(first_name ILIKE $${values.length - 2} AND last_name ILIKE $${values.length - 1} AND gender = $${values.length})`);
+  if (firstName && lastName && rawGender) {
+    let genderMatch = rawGender;
+    if (rawGender.includes('ชาย') || rawGender.toLowerCase() === 'male' || rawGender.toLowerCase() === 'm') genderMatch = 'male';
+    if (rawGender.includes('หญิง') || rawGender.toLowerCase() === 'female' || rawGender.toLowerCase() === 'f') genderMatch = 'female';
+
+    values.push(firstName, lastName, genderMatch, rawGender);
+    conditions.push(`(first_name ILIKE $${values.length - 3} AND last_name ILIKE $${values.length - 2} AND (gender = $${values.length - 1} OR gender = $${values.length}))`);
   }
 
   if (conditions.length === 0) return [];
@@ -148,10 +158,13 @@ export const updateReportLocation = async (id, locationData) => {
   const db = getDbConnection();
   const query = `
     UPDATE missing_reports 
-    SET location = $1, last_updated_by = $2, life_status = COALESCE($3, life_status),
-        latitude = COALESCE($4, latitude), longitude = COALESCE($5, longitude),
+    SET location = $1, last_updated_by = $2, 
+        life_status = COALESCE($3, life_status),
+        latitude = COALESCE($4, latitude), 
+        longitude = COALESCE($5, longitude),
+        photo_url = COALESCE($6, photo_url),
         updated_at = CURRENT_TIMESTAMP
-    WHERE id = $6
+    WHERE id = $7
     RETURNING *
   `;
   const { rows } = await db.query(query, [
@@ -160,8 +173,18 @@ export const updateReportLocation = async (id, locationData) => {
     locationData.lifeStatus, 
     locationData.lat || locationData.latitude || null,
     locationData.long || locationData.longitude || null,
+    locationData.photoUrl || locationData.photo_url || null,
     id
   ]);
+  return rows[0];
+};
+
+export const findReunificationByReportId = async (reportId) => {
+  const db = getDbConnection();
+  const { rows } = await db.query(
+    'SELECT * FROM reunifications WHERE report_id = $1',
+    [reportId]
+  );
   return rows[0];
 };
 
