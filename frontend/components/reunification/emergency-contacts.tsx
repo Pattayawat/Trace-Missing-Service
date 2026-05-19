@@ -3,7 +3,8 @@
 import { Phone, Clock, MessageCircle, AlertTriangle, Shield, Heart } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { emergencyContacts, type EmergencyContact } from "@/lib/mock-data"
+import { emergencyContacts } from "@/lib/mock-data"
+import type { EmergencyContact } from "@/lib/types"
 
 function PriorityIcon({ priority }: { priority: EmergencyContact["priority"] }) {
   if (priority === "critical") {

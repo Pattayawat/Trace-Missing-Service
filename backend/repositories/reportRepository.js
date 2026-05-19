@@ -118,13 +118,15 @@ export const findDuplicateReport = async (data) => {
 };
 
 export const findAllMatchingReports = async (data) => {
-...
+  const db = getDbConnection();
   const citizenId = data.citizenId || data.citizen_id;
   const firstName = data.firstName || data.first_name;
   const lastName = data.lastName || data.last_name;
 
   const conditions = [];
-...
+  const values = [];
+
+  if (citizenId) {
     values.push(citizenId);
     conditions.push(`citizen_id = $${values.length}`);
   }
@@ -135,7 +137,10 @@ export const findAllMatchingReports = async (data) => {
   }
 
   if (conditions.length === 0) return [];
-...
+
+  const query = `SELECT * FROM missing_reports WHERE (${conditions.join(' OR ')}) AND deleted_at IS NULL`;
+  const { rows } = await db.query(query, values);
+  return rows;
 };
 
 export const updateReportLocation = async (id, locationData) => {

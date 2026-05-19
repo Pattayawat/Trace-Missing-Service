@@ -69,3 +69,12 @@ INSERT INTO incidents (name, location, status) VALUES
 ('Flood 2024', 'Bangkok', 'active'),
 ('Earthquake', 'Chiang Mai', 'active')
 ON CONFLICT DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS case_events (
+  id SERIAL PRIMARY KEY,
+  report_id INTEGER REFERENCES missing_reports(id),
+  event_type VARCHAR(100),
+  message TEXT,
+  details JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

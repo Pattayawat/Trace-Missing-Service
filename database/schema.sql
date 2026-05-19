@@ -146,4 +146,14 @@ CREATE TABLE IF NOT EXISTS verification_requests (
 CREATE INDEX idx_outbox_events_status ON outbox_events(status, next_retry_at) WHERE status = 'pending';
 CREATE INDEX idx_shelter_person_cache_embedding ON shelter_person_cache USING ivfflat (face_embedding vector_cosine_ops);
 CREATE INDEX idx_person_photos_embedding ON person_photos USING ivfflat (face_embedding vector_cosine_ops);
+
+-- case_events table
+CREATE TABLE IF NOT EXISTS case_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    report_id UUID REFERENCES missing_reports(id),
+    event_type VARCHAR(100),
+    message TEXT,
+    details JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
     

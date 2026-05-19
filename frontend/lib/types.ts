@@ -35,6 +35,7 @@ export interface Person {
   incidentId: string // Link to incident
   latitude?: number | null
   longitude?: number | null
+  hospital_id?: string | null
 }
 
 export interface EmergencyContact {

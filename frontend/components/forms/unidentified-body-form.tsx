@@ -7,6 +7,7 @@ import { IncidentSelector } from "@/components/forms/incident-selector"
 import { Button } from "@/components/ui/button"
 import { createPerson } from "@/lib/api"
 import { useSWRConfig } from "swr"
+import { useToast } from "@/hooks/use-toast"
 import { CheckCircle, AlertTriangle, Loader2, User, MapPin, ClipboardList, ShieldCheck } from "lucide-react"
 
 interface FormData {
@@ -35,6 +36,7 @@ interface FormErrors {
 
 export function UnidentifiedBodyForm() {
   const { mutate } = useSWRConfig()
+  const { toast } = useToast()
   const [formData, setFormData] = React.useState<FormData>({
     incidentId: "",
     sourceSystem: "",
@@ -115,9 +117,19 @@ export function UnidentifiedBodyForm() {
 
       setIsSubmitting(false)
       setIsSubmitted(true)
+
+      toast({
+        title: "ส่งรายงานสำเร็จ",
+        description: "ได้รับข้อมูลผู้เสียชีวิตไม่ทราบตัวตนแล้ว",
+      })
     } catch (e) {
       console.error("Submission failed", e)
       setIsSubmitting(false)
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถส่งรายงานได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
+      })
     }
   }
 

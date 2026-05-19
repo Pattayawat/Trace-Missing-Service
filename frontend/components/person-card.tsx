@@ -208,6 +208,10 @@ export function PersonCard({
               variant="default"
               size="sm"
               className="flex-1 gap-1.5"
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewDetails(person);
+              }}
             >
               <Eye size={14} aria-hidden="true" />
               ดูรายละเอียด

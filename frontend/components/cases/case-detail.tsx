@@ -265,7 +265,7 @@ function CaseDetailInner() {
               </h3>
               {matches.length > 0 ? (
                 <div className="space-y-4">
-                  {matches.map((m) => (
+                  {matches.map((m: any) => (
                     <Card key={m.id} className="border-primary/20 bg-primary/5 hover:border-primary/40 transition-colors cursor-pointer group">
                       <CardContent className="p-4 flex gap-4">
                         <div className="h-16 w-16 rounded-lg bg-muted overflow-hidden shrink-0">

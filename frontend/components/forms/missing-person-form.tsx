@@ -7,6 +7,7 @@ import { IncidentSelector } from "@/components/forms/incident-selector"
 import { Button } from "@/components/ui/button"
 import { createPerson } from "@/lib/api"
 import { useSWRConfig } from "swr"
+import { useToast } from "@/hooks/use-toast"
 import {
   CheckCircle,
   AlertCircle,
@@ -71,6 +72,7 @@ interface FormErrors {
 const STORAGE_KEY = "missing_person_report_draft"
 
 export function MissingPersonForm() {
+  const { toast } = useToast()
   const [currentStep, setCurrentStep] = React.useState(1)
   const { mutate } = useSWRConfig()
   const [formData, setFormData] = React.useState<FormData>({
@@ -205,9 +207,19 @@ export function MissingPersonForm() {
       setIsSubmitting(false)
       setIsSubmitted(true)
       localStorage.removeItem(STORAGE_KEY)
+
+      toast({
+        title: "ส่งรายงานสำเร็จ",
+        description: "ได้รับข้อมูลคนหายของคุณเรียบร้อยแล้ว",
+      })
     } catch (e) {
       console.error("Submission failed", e)
       setIsSubmitting(false)
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถส่งรายงานได้ในขณะนี้ กรุณาลองใหมีกรั้ง",
+        variant: "destructive",
+      })
     }
   }
 

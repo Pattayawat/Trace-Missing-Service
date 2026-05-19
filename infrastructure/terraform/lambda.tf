@@ -17,6 +17,7 @@ locals {
     NOTIFICATION_QUEUE_URL  = aws_sqs_queue.notification.url
     HOSPITAL_API_URL        = var.hospital_api_url
     HOSPITAL_API_TOKEN      = var.hospital_api_token
+    SURVIVOR_MATCHED_SNS_TOPIC_ARN = aws_sns_topic.survivor_matched.arn
   }
 }
 

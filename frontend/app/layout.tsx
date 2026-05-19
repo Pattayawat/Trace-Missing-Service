@@ -3,6 +3,7 @@ import { Prompt, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { IncidentProvider } from '@/context/incident-context'
 import { AppLayout } from '@/components/layout/app-layout'
+import { Toaster } from "@/components/ui/toaster"
 import './globals.css'
 
 const prompt = Prompt({ 
@@ -48,6 +49,7 @@ export default function RootLayout({
             {children}
           </AppLayout>
         </IncidentProvider>
+        <Toaster />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
